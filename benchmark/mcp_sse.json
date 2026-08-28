@@ -1,0 +1,7 @@
+[
+  {
+    "name": "benchmark_sse",
+    "url": "http://127.0.0.1:19100/mcp-sse",
+    "transport_protocol": "sse"
+  }
+]

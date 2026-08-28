@@ -1,0 +1,53 @@
+# Минимальный конфиг для basic_agent.py
+
+llm_defaults:
+  model_alias: "qwen-moe-local"
+  attempts_per_model: 2
+  model_alias_fallback_chain:
+    - "qwen-moe-local"
+
+llm:
+  backend_instances:
+    vllm_local:
+      type: vllm
+      api_key: "EMPTY"
+      base_url: "http://localhost:8001/v1"
+      health_check_url: "http://localhost:8001/health"
+      request_timeout: 180
+
+  models:
+    qwen-moe-local:
+      backends:
+        - backend_instance_ref: vllm_local
+          backend_model_id: "qwen-moe-local"
+          priority: 1
+          default_openai_params:
+            temperature: 0.6
+            top_p: 0.95
+            max_tokens: 204800
+
+  max_parallel_requests: 16
+  request_timeout: 180
+  default_max_tokens: 32768
+  timeout_healthcheck_timeout: 5
+
+tools:
+  call_limit:
+    basic_rounds: 5
+    thread: 50
+    tool_exec_fail_retries: 3
+
+agent:
+  is_default_bot: true
+  is_strict_mode: false
+  custom_base_role: ""
+
+validator:
+  enabled_for_tags: [critical, adversarial]
+  max_reject_retries: 2
+  model: same_or_smaller
+
+# mcp_servers:
+#   docs:
+#     type: http
+#     url: http://localhost:6280

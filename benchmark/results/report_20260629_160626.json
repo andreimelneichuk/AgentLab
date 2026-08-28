@@ -1,0 +1,668 @@
+{
+  "started_at": "2026-06-29T11:06:00.543967+00:00",
+  "config": "config.benchmark.yml",
+  "backends": [
+    "langchain",
+    "basic_loop"
+  ],
+  "scenarios": [
+    {
+      "id": "mcp_marker_basic",
+      "description": "Вызов MCP и маркер в ответе",
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови инструмент benchmark_probe и дословно сообщи что он вернул.",
+              "answer": "Инструмент `benchmark_probe` вернул следующее:\n\n```\nBENCH_MARKER_STREAMABLE=orchid-17\n```",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "history_length": 4
+            }
+          ],
+          "duration_sec": 1.48
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови инструмент benchmark_probe и дословно сообщи что он вернул.",
+              "answer": "Инструмент `benchmark_probe` вернул: `BENCH_MARKER_STREAMABLE=orchid-17`.",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "history_length": 4
+            }
+          ],
+          "duration_sec": 0.64
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.833,
+          "passed": true,
+          "answer_a_preview": "Инструмент `benchmark_probe` вернул следующее:\n\n```\nBENCH_MARKER_STREAMABLE=orchid-17\n```",
+          "answer_b_preview": "Инструмент `benchmark_probe` вернул: `BENCH_MARKER_STREAMABLE=orchid-17`.",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "policy_then_recall",
+      "description": "MCP-факт → вспоминание без повторного вызова",
+      "passed": false,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": false,
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови get_policy_fact и кратко перескажи правило из результата.",
+              "answer": "Согласно правилу, каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": false,
+              "failures": [
+                "нет подстроки 'violet-42'"
+              ],
+              "history_length": 4
+            },
+            {
+              "turn_index": 1,
+              "user": "Какой был секретный факт политики? Ответь без вызова инструментов.",
+              "answer": "Секретный факт политики: violet-42.",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 6
+            },
+            {
+              "turn_index": 2,
+              "user": "Повтори правило форматирования ответов из политики.",
+              "answer": "Правило форматирования: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 8
+            }
+          ],
+          "duration_sec": 1.44
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": false,
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови get_policy_fact и кратко перескажи правило из результата.",
+              "answer": "Правило гласит, что каждый ответ ассистента должен заканчиваться тегом [POLICY_OK]. [POLICY_OK]",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": false,
+              "failures": [
+                "нет подстроки 'violet-42'"
+              ],
+              "history_length": 4
+            },
+            {
+              "turn_index": 1,
+              "user": "Какой был секретный факт политики? Ответь без вызова инструментов.",
+              "answer": "Секретный факт политики — violet-42. [POLICY_OK]",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 6
+            },
+            {
+              "turn_index": 2,
+              "user": "Повтори правило форматирования ответов из политики.",
+              "answer": "Правило форматирования ответов из политики: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK]. [POLICY_OK]",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 8
+            }
+          ],
+          "duration_sec": 1.61
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.583,
+          "passed": true,
+          "answer_a_preview": "Согласно правилу, каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+          "answer_b_preview": "Правило гласит, что каждый ответ ассистента должен заканчиваться тегом [POLICY_OK]. [POLICY_OK]",
+          "turn_index": 0
+        },
+        {
+          "similarity": 0.8,
+          "passed": true,
+          "answer_a_preview": "Секретный факт политики: violet-42.",
+          "answer_b_preview": "Секретный факт политики — violet-42. [POLICY_OK]",
+          "turn_index": 1
+        },
+        {
+          "similarity": 0.818,
+          "passed": true,
+          "answer_a_preview": "Правило форматирования: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+          "answer_b_preview": "Правило форматирования ответов из политики: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK]. [POLICY_OK]",
+          "turn_index": 2
+        }
+      ]
+    },
+    {
+      "id": "format_rule_long_dialog",
+      "description": "Правило формата держится 8 ходов",
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "turns": [
+            {
+              "kind": "setup",
+              "user": "Запомни на всю беседу: в КАЖДОМ своём ответе последнее слово должно быть BANANA.\nПодтверди одним словом OK.\n",
+              "answer": "OK",
+              "tool_calls": [],
+              "mcp_delta": 0
+            },
+            {
+              "turn_index": 0,
+              "user": "Привет!",
+              "answer": "Привет! Как я могу помочь вам сегодня? BANANA",
+              "tool_calls": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 4
+            },
+            {
+              "turn_index": 1,
+              "user": "Что такое переменная?",
+              "answer": "Переменная — это именованная область памяти, которая хранит значение. Она позволяет сохранять данные для последующего использования в программе.\n\nBANANA",
+              "tool_calls": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 6
+            },
+            {
+              "turn_index": 2,
+              "user": "А константа?",
+              "answer": "Константа — это именованная величина, значение которой не может быть изменено после ее объявления.\n\nBANANA",
+              "tool_calls": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 8
+            },
+            {
+              "turn_index": 3,
+              "user": "Спасибо",
+              "answer": "Пожалуйста! Если будут еще вопросы — обращайся. BANANA",
+              "tool_calls": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 10
+            },
+            {
+              "turn_index": 4,
+              "user": "Расскажи про списки в Python",
+              "answer": "Списки в Python — это упорядоченные изменяемые коллекции элементов, которые могут содержать объекты разных типов.\n\nОсновные характеристики:\n- Создаются с помощью квадратных скобок `[]` или функции `list()`.\n- Поддерживают индексацию и срезы.\n- Элементы можно добавлять, удалять и изменять.\n\nПример создания:\n```python\nmy_list = [1, 2, 3, \"hello\"]\n```\n\nОсновные методы:\n- `append(x)` — добавить элемент в конец.\n- `insert(i, x)` — вставить элемент по индексу.\n- `remove(x)` — удалить первый элемент со значением x.\n- `pop([i])` — удалить и вернуть элемент по индексу (или последний).\n- `sort()` — сортировка на месте.\n- `reverse()` — разворот списка на месте.\n\nBANANA",
+              "tool_calls": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 12
+            },
+            {
+              "turn_index": 5,
+              "user": "А кортежи?",
+              "answer": "Кортежи (tuples) в Python — это упорядоченные неизменяемые коллекции элементов.\n\nОсновные характеристики:\n- Создаются с помощью круглых скобок `()` или функции `tuple()`.\n- После создания изменить, добавить или удалить элементы нельзя.\n- Часто используются для данных, которые не должны меняться (например, координаты, даты).\n\nПример создания:\n```python\nmy_tuple = (1, 2, 3, \"hello\")\n```\n\nОсобенности:\n- Поддерживают индексацию и срезы, как и списки.\n- Эффективнее по памяти, чем списки.\n- Могут использоваться в качестве ключей словарей (так как неизменяемы).\n\nBANANA",
+              "tool_calls": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 14
+            },
+            {
+              "turn_index": 6,
+              "user": "Чем list отличается от tuple?",
+              "answer": "Основные различия между `list` и `tuple` в Python:\n\n- **Изменяемость**: `list` — изменяемый тип (можно добавлять, удалять и изменять элементы), `tuple` — неизменяемый (после создания изменить нельзя).\n- **Синтаксис**: списки создаются в квадратных скобках `[]`, кортежи — в круглых `()`.\n- **Производительность**: `tuple` работает быстрее и занимает меньше памяти, так как неизменяем.\n- **Применение**: `list` используется для коллекций данных, которые могут меняться, `tuple` — для фиксированных наборов данных (например, координаты, записи БД).\n- **Хешируемость**: `tuple` (если содержит только неизменяемые элементы) может быть ключом словаря, `list` — нет.\n\nBANANA",
+              "tool_calls": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 16
+            },
+            {
+              "turn_index": 7,
+              "user": "Напомни какое правило формата ты должен соблюдать?",
+              "answer": "Я должен соблюдать следующие правила форматирования:\n\n- Использовать только **жирный**, __курсив__, <u>подчёркнутый</u>, ~~зачёркнутый~~, `код`, блоки кода в ``` и ссылки.\n- Заголовки `# ## ###` не поддерживаются, поэтому для разделов используется **жирный ВЕРХНИЙ РЕГИСТР**.\n- Списки должны использовать ТОЛЬКО дефис `-` как маркер, с РОВНО одним пробелом после него.\n- Звёздочки `*` или `+` как маркеры списков запрещены.\n- Раздел **Источники:** в ответе этого бота полностью отсутствует.\n\nBANANA",
+              "tool_calls": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 18
+            }
+          ],
+          "duration_sec": 7.91
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "turns": [
+            {
+              "kind": "setup",
+              "user": "Запомни на всю беседу: в КАЖДОМ своём ответе последнее слово должно быть BANANA.\nПодтверди одним словом OK.\n",
+              "answer": "OK",
+              "tool_calls": [],
+              "mcp_delta": 0
+            },
+            {
+              "turn_index": 0,
+              "user": "Привет!",
+              "answer": "Привет! Как я могу помочь вам сегодня? BANANA",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 4
+            },
+            {
+              "turn_index": 1,
+              "user": "Что такое переменная?",
+              "answer": "Переменная — это именованная область памяти, которая хранит значение. Она позволяет программисту обращаться к данным по имени, а не по адресу в памяти. В Python переменные создаются автоматически при присваивании значения, например: `x = 10`. BANANA",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 6
+            },
+            {
+              "turn_index": 2,
+              "user": "А константа?",
+              "answer": "Константа — это переменная, значение которой не должно изменяться после инициализации. В Python нет встроенного механизма для строгой защиты от изменения, но по соглашению имена констант пишутся заглавными буквами, например: `MAX_SIZE = 100`. Это сигнал другим разработчикам, что значение не следует менять. BANANA",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 8
+            },
+            {
+              "turn_index": 3,
+              "user": "Спасибо",
+              "answer": "Пожалуйста! Если возникнут еще вопросы, обращайтесь. BANANA",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 10
+            },
+            {
+              "turn_index": 4,
+              "user": "Расскажи про списки в Python",
+              "answer": "Списки (lists) в Python — это упорядоченные, изменяемые коллекции элементов, которые могут содержать объекты разных типов. Они создаются с помощью квадратных скобок `[]` или функции `list()`. Основные операции включают добавление (`append`, `insert`), удаление (`remove`, `pop`), сортировку (`sort`) и срезы. Списки поддерживают индексацию, начиная с 0, и отрицательную индексацию. BANANA",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 12
+            },
+            {
+              "turn_index": 5,
+              "user": "А кортежи?",
+              "answer": "Кортежи (tuples) — это упорядоченные, но неизменяемые коллекции элементов. Они создаются с помощью круглых скобок `()` или функции `tuple()`. Поскольку они неизменяемы, их нельзя добавлять, удалять или изменять элементы после создания. Кортежи часто используются для хранения связанных данных, которые не должны меняться, например, координаты `(x, y)` или данные о пользователе. BANANA",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 14
+            },
+            {
+              "turn_index": 6,
+              "user": "Чем list отличается от tuple?",
+              "answer": "Главное отличие заключается в изменяемости: `list` (список) является изменяемым объектом, то есть вы можете добавлять, удалять или изменять его элементы после создания. `tuple` (кортеж) является неизменяемым объектом; после создания его содержимое зафиксировано и не может быть изменено. Из-за этой особенности кортежи часто быстрее и могут использоваться в качестве ключей в словарях, тогда как списки — нет. BANANA",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 16
+            },
+            {
+              "turn_index": 7,
+              "user": "Напомни какое правило формата ты должен соблюдать?",
+              "answer": "Правило формата требует, чтобы последнее слово в каждом моем ответе было BANANA. BANANA",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 18
+            }
+          ],
+          "duration_sec": 6.36
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "Привет! Как я могу помочь вам сегодня? BANANA",
+          "answer_b_preview": "Привет! Как я могу помочь вам сегодня? BANANA",
+          "turn_index": 0
+        },
+        {
+          "similarity": 0.367,
+          "passed": true,
+          "answer_a_preview": "Переменная — это именованная область памяти, которая хранит значение. Она позволяет сохранять данные для последующего использования в программе.\n\nBANANA",
+          "answer_b_preview": "Переменная — это именованная область памяти, которая хранит значение. Она позволяет программисту обращаться к данным по имени, а не по адресу в памяти. В Python переменные создаются автоматически при присваивании значения, например: `x = 10`. BANANA",
+          "turn_index": 1
+        },
+        {
+          "similarity": 0.154,
+          "passed": false,
+          "answer_a_preview": "Константа — это именованная величина, значение которой не может быть изменено после ее объявления.\n\nBANANA",
+          "answer_b_preview": "Константа — это переменная, значение которой не должно изменяться после инициализации. В Python нет встроенного механизма для строгой защиты от изменения, но по соглашению имена констант пишутся заглавными буквами, например: `MAX_SIZE = 100`. Это сигнал другим разработчикам, что значение не следует ",
+          "turn_index": 2
+        },
+        {
+          "similarity": 0.556,
+          "passed": true,
+          "answer_a_preview": "Пожалуйста! Если будут еще вопросы — обращайся. BANANA",
+          "answer_b_preview": "Пожалуйста! Если возникнут еще вопросы, обращайтесь. BANANA",
+          "turn_index": 3
+        },
+        {
+          "similarity": 0.462,
+          "passed": true,
+          "answer_a_preview": "Списки в Python — это упорядоченные изменяемые коллекции элементов, которые могут содержать объекты разных типов.\n\nОсновные характеристики:\n- Создаются с помощью квадратных скобок `[]` или функции `list()`.\n- Поддерживают индексацию и срезы.\n- Элементы можно добавлять, удалять и изменять.\n\nПример со",
+          "answer_b_preview": "Списки (lists) в Python — это упорядоченные, изменяемые коллекции элементов, которые могут содержать объекты разных типов. Они создаются с помощью квадратных скобок `[]` или функции `list()`. Основные операции включают добавление (`append`, `insert`), удаление (`remove`, `pop`), сортировку (`sort`) ",
+          "turn_index": 4
+        },
+        {
+          "similarity": 0.46,
+          "passed": true,
+          "answer_a_preview": "Кортежи (tuples) в Python — это упорядоченные неизменяемые коллекции элементов.\n\nОсновные характеристики:\n- Создаются с помощью круглых скобок `()` или функции `tuple()`.\n- После создания изменить, добавить или удалить элементы нельзя.\n- Часто используются для данных, которые не должны меняться (нап",
+          "answer_b_preview": "Кортежи (tuples) — это упорядоченные, но неизменяемые коллекции элементов. Они создаются с помощью круглых скобок `()` или функции `tuple()`. Поскольку они неизменяемы, их нельзя добавлять, удалять или изменять элементы после создания. Кортежи часто используются для хранения связанных данных, которы",
+          "turn_index": 5
+        },
+        {
+          "similarity": 0.202,
+          "passed": false,
+          "answer_a_preview": "Основные различия между `list` и `tuple` в Python:\n\n- **Изменяемость**: `list` — изменяемый тип (можно добавлять, удалять и изменять элементы), `tuple` — неизменяемый (после создания изменить нельзя).\n- **Синтаксис**: списки создаются в квадратных скобках `[]`, кортежи — в круглых `()`.\n- **Производ",
+          "answer_b_preview": "Главное отличие заключается в изменяемости: `list` (список) является изменяемым объектом, то есть вы можете добавлять, удалять или изменять его элементы после создания. `tuple` (кортеж) является неизменяемым объектом; после создания его содержимое зафиксировано и не может быть изменено. Из-за этой о",
+          "turn_index": 6
+        },
+        {
+          "similarity": 0.036,
+          "passed": false,
+          "answer_a_preview": "Я должен соблюдать следующие правила форматирования:\n\n- Использовать только **жирный**, __курсив__, <u>подчёркнутый</u>, ~~зачёркнутый~~, `код`, блоки кода в ``` и ссылки.\n- Заголовки `# ## ###` не поддерживаются, поэтому для разделов используется **жирный ВЕРХНИЙ РЕГИСТР**.\n- Списки должны использо",
+          "answer_b_preview": "Правило формата требует, чтобы последнее слово в каждом моем ответе было BANANA. BANANA",
+          "turn_index": 7
+        }
+      ]
+    },
+    {
+      "id": "mcp_python_then_context",
+      "description": "MCP lookup + опора на историю на 5-м ходу",
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови python_doc_lookup с topic='decorators' и процитируй REF из ответа.",
+              "answer": "REF из ответа: PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "history_length": 4
+            },
+            {
+              "turn_index": 1,
+              "user": "Ок, понял.",
+              "answer": "Если у тебя будут еще вопросы, обращайся!",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 6
+            },
+            {
+              "turn_index": 2,
+              "user": "Кстати, а про классы?",
+              "answer": "REF из ответа: PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup",
+                "python_doc_lookup"
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "history_length": 10
+            },
+            {
+              "turn_index": 3,
+              "user": "Какой REF код ты получил от инструмента про decorators?",
+              "answer": "REF код, полученный от инструмента про decorators: PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup",
+                "python_doc_lookup"
+              ],
+              "rounds": 2,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 12
+            }
+          ],
+          "duration_sec": 2.83
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови python_doc_lookup с topic='decorators' и процитируй REF из ответа.",
+              "answer": "REF=PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "history_length": 4
+            },
+            {
+              "turn_index": 1,
+              "user": "Ок, понял.",
+              "answer": "Если у вас возникнут еще вопросы, обращайтесь!",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 6
+            },
+            {
+              "turn_index": 2,
+              "user": "Кстати, а про классы?",
+              "answer": "REF=PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "history_length": 10
+            },
+            {
+              "turn_index": 3,
+              "user": "Какой REF код ты получил от инструмента про decorators?",
+              "answer": "REF=PYDOC-778",
+              "tool_calls": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "history_length": 12
+            }
+          ],
+          "duration_sec": 2.03
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.75,
+          "passed": true,
+          "answer_a_preview": "REF из ответа: PYDOC-778",
+          "answer_b_preview": "REF=PYDOC-778",
+          "turn_index": 0
+        },
+        {
+          "similarity": 0.333,
+          "passed": false,
+          "answer_a_preview": "Если у тебя будут еще вопросы, обращайся!",
+          "answer_b_preview": "Если у вас возникнут еще вопросы, обращайтесь!",
+          "turn_index": 1
+        },
+        {
+          "similarity": 0.75,
+          "passed": true,
+          "answer_a_preview": "REF из ответа: PYDOC-778",
+          "answer_b_preview": "REF=PYDOC-778",
+          "turn_index": 2
+        },
+        {
+          "similarity": 0.375,
+          "passed": true,
+          "answer_a_preview": "REF код, полученный от инструмента про decorators: PYDOC-778",
+          "answer_b_preview": "REF=PYDOC-778",
+          "turn_index": 3
+        }
+      ]
+    },
+    {
+      "id": "sse_transport",
+      "description": "SSE MCP на отдельном порту",
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови benchmark_sse_probe и напиши маркер из ответа.",
+              "answer": "Маркер из ответа: **BENCH_MARKER_SSE=amber-91**",
+              "tool_calls": [
+                "benchmark_sse_probe"
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "history_length": 4
+            }
+          ],
+          "duration_sec": 0.55
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови benchmark_sse_probe и напиши маркер из ответа.",
+              "answer": "BENCH_MARKER_SSE=amber-91",
+              "tool_calls": [
+                "benchmark_sse_probe"
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "history_length": 4
+            }
+          ],
+          "duration_sec": 0.54
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.5,
+          "passed": true,
+          "answer_a_preview": "Маркер из ответа: **BENCH_MARKER_SSE=amber-91**",
+          "answer_b_preview": "BENCH_MARKER_SSE=amber-91",
+          "turn_index": 0
+        }
+      ]
+    }
+  ],
+  "finished_at": "2026-06-29T11:06:26.544892+00:00",
+  "all_passed": false
+}

@@ -1,0 +1,81 @@
+# Минимальный конфиг для basic_agent.py
+
+llm_defaults:
+  model_alias: "qwen-moe-local"
+  attempts_per_model: 2
+  model_alias_fallback_chain:
+    - "qwen-moe-local"
+
+llm:
+  backend_instances:
+    vllm_local:
+      type: vllm
+      api_key: "EMPTY"
+      base_url: "http://localhost:8001/v1"
+      health_check_url: "http://localhost:8001/health"
+      request_timeout: 180
+
+  models:
+    qwen-moe-local:
+      backends:
+        - backend_instance_ref: vllm_local
+          backend_model_id: "qwen-moe-local"
+          priority: 1
+          default_openai_params:
+            temperature: 0.6
+            top_p: 0.95
+            max_tokens: 204800
+
+  max_parallel_requests: 16
+  request_timeout: 180
+  default_max_tokens: 32768
+  timeout_healthcheck_timeout: 5
+
+tools:
+  call_limit:
+    basic_rounds: 5
+    thread: 50
+    tool_exec_fail_retries: 3
+
+agent:
+  is_default_bot: true
+  is_strict_mode: false
+  custom_base_role: ""
+
+hierarchical_context_tree:
+  enabled: true
+  # threshold=6: медиана сценария каталога ~2.8 хода (см. context_engineering
+  # комментарий ниже), но drift-сценарии (s11_drift_hr, s12_drift_multi, ...)
+  # доходят до 50-100 ходов -- там 2-уровневое дерево реально начинает
+  # редьюсить. 6 leaf-сегментов -- это ~3 полных хода (user+assistant/tools),
+  # что покрывает большинство обычных сценариев без единого reduce, но не
+  # даёт drift-сценариям расти неограниченно.
+  leaf_threshold: 6
+  # reduce_k: сколько самых старых leaf-сегментов сжимаются в один summary-узел
+  # за один reduce-проход. Меньше threshold, чтобы после reduce оставался
+  # запас свежих leaf-сегментов до следующего срабатывания.
+  reduce_k: 3
+
+context_engineering:
+  enabled: true
+  # v2: 4 вместо 2 — средний сценарий каталога ~2.8 хода, старый threshold=2
+  # маскировал факты почти сразу после их получения. Реальные MCP-маркеры
+  # (EMP_ID=, POLICY_FACT=, ...) в любом случае защищены через
+  # MARKER_NEVER_DROP_REGEX независимо от этого порога.
+  mask_tool_older_than_turns: 4
+  scratch_token_threshold: 1500
+  select_enabled: true
+  select_keep_last_user_turns: 2
+  select_min_keyword_overlap: 1
+  isolate_enabled: true
+  never_drop_patterns:
+    - "POLICY_OK"
+    - "ЗАПРЕЩЕНО"
+    - "security"
+    - "СТРОГО"
+    - "STOP"
+
+# mcp_servers:
+#   docs:
+#     type: http
+#     url: http://localhost:6280

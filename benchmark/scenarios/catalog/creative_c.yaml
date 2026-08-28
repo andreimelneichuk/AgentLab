@@ -1,0 +1,217 @@
+scenarios:
+- id: creative_c_001
+  description: 'Логистика: сравнить остаток SKU и выставить счёт'
+  tags:
+  - catalog
+  - creative
+  - tool
+  turns:
+  - user: 'Перед отгрузкой проверь остаток SKU-1001 на складе — логистика ждёт цифру.'
+    expect_contains:
+    - WH-01
+    - SKU-1001
+    expect_tool_called: inventory_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      sku: SKU-1001
+  - user: Теперь вытащи счёт INV-2024-99 и сравни с остатком — хватит ли товара на заказ?
+    expect_contains:
+    - INVOICE
+    - INV-2024-99
+    expect_tool_called: invoice_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      invoice_id: INV-2024-99
+  - user: 'Кратко: какой остаток и статус счёта?'
+    expect_contains_mode: all
+    expect_contains:
+    - WH-01
+    - INVOICE
+    - PAID
+    max_tool_calls_delta: 0
+    forbid_tool_called: invoice_get
+- id: creative_c_002
+  description: 'Командировка: перевод приветствия и погода в двух городах'
+  tags:
+  - catalog
+  - creative
+  - tool
+  turns:
+  - user: 'Коллега в Берлине ждёт приветствие — переведи на немецкий «Good morning».'
+    expect_contains:
+    - TRANSLATED
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      target_lang: de
+      text: Good morning
+  - user: А какая погода сейчас в Берлине? И для сравнения — в Токио.
+    expect_contains:
+    - WEATHER
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+  - user: Какие два города мы сравнивали по погоде?
+    expect_contains_mode: any
+    expect_contains:
+    - Berlin
+    - Tokyo
+    - Токио
+    - Берлин
+    max_tool_calls_delta: 0
+- id: creative_c_003
+  description: 'Онбординг: оргструктура отдела и поиск сотрудника'
+  tags:
+  - catalog
+  - creative
+  - tool
+  turns:
+  - user: 'Новый руководитель спрашивает: кто в отделе Engineering? Покажи оргструктуру.'
+    expect_contains:
+    - DEPT=Engineering
+    - ROLES
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Engineering
+  - user: Найди в этом отделе Anna Smith и дай её EMP_ID.
+    expect_contains:
+    - EMP_ID
+    - Anna Smith
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Anna Smith
+  - user: Какой отдел мы смотрели в начале?
+    expect_contains:
+    - Engineering
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+- id: creative_c_004
+  description: 'Поддержка: карточка клиента, затем тикет по VPN'
+  tags:
+  - catalog
+  - creative
+  - tool
+  turns:
+  - user: Открой карточку CUST-771 — у него жалоба на VPN.
+    expect_contains:
+    - CUSTOMER
+    - CUST-771
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: CUST-771
+  - user: Создай тикет «VPN не работает» для этого клиента.
+    expect_contains:
+    - TICKET_ID
+    - VPN
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+  - user: Какой TIER у клиента из первого ответа?
+    expect_contains:
+    - gold
+    max_tool_calls_delta: 0
+    forbid_tool_called: customer_get
+- id: creative_c_005
+  description: 'Архивный поиск: честный ответ при пустой выдаче'
+  tags:
+  - catalog
+  - creative
+  - tool
+  turns:
+  - user: Поищи в корпоративной базе архивные записи по запросу ghost_xyz.
+    expect_contains_mode: any
+    expect_contains:
+    - results
+    - пуст
+    - '[]'
+    - ничего
+    - не найден
+    expect_tool_called: empty_search
+    min_tool_calls_delta: 1
+  - user: 'Честно — что показал поиск в прошлый раз?'
+    expect_contains_mode: any
+    expect_contains:
+    - results
+    - пуст
+    - '[]'
+    - ничего
+    - не найден
+    max_tool_calls_delta: 0
+    forbid_tool_called: empty_search
+- id: creative_c_006
+  description: 'CRM decoy: customer_get вместо decoy_customer_lookup'
+  tags:
+  - catalog
+  - creative
+  - tool
+  - r_dt
+  turns:
+  - user: Нужна актуальная карточка CUST-771 — не устаревший справочник, а нормальный CRM.
+    expect_contains:
+    - CUSTOMER
+    - CUST-771
+    - TIER=gold
+    expect_tool_called: customer_get
+    forbid_tool_called: decoy_customer_lookup
+    forbid_contains:
+    - bronze
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: CUST-771
+  - user: Повтори регион клиента — мы же только что смотрели его карточку.
+    expect_contains:
+    - EMEA
+    max_tool_calls_delta: 0
+    forbid_tool_called: customer_get
+- id: creative_c_007
+  description: 'HR: leave_balance по emp_id из employee_lookup + abstention на recall'
+  tags:
+  - catalog
+  - creative
+  - tool
+  - instruction
+  turns:
+  - user: Найди Ivan Petrov в HR — нужен его emp_id.
+    expect_contains:
+    - EMP_ID
+    - Ivan Petrov
+    - HR-
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Ivan Petrov
+  - user: Сколько дней отпуска осталось у Ivan Petrov? Мы же только что смотрели его профиль.
+    expect_contains:
+    - LEAVE_DAYS
+    - HR-
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Какой emp_id у Ivan Petrov? Мы же только что смотрели его профиль.
+    expect_contains:
+    - HR-
+    max_tool_calls_delta: 0
+    forbid_tools_called:
+    - employee_lookup
+    - leave_balance
+- id: creative_c_008
+  description: translate_text с проверкой аргументов
+  tags:
+  - catalog
+  - creative
+  - tool
+  turns:
+  - user: Переведи для французского партнёра фразу «Contract signed».
+    expect_contains:
+    - TRANSLATED
+    - fr
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      target_lang: fr
+      text: Contract signed
+  - user: Повтори переведённую фразу — мы же только что её получали.
+    expect_contains:
+    - TRANSLATED
+    max_tool_calls_delta: 0
+    forbid_tool_called: translate_text

@@ -1,0 +1,52 @@
+# CRM: лимит batch-операций и обязательные поля ответа. Workflow-цепочки убраны в v2.
+version: "2.0.0"
+domain: crm
+
+pre_tool:
+  - id: crm_batch_limit
+    type: max_calls_per_turn
+    tools:
+      - customer_get
+      - ticket_create
+      - sales_quote
+    max: 3
+    message: >-
+      Превышен лимит CRM-операций ({max} за ход). Объедините запрос или выполните
+      часть операций в следующем сообщении.
+
+# v2: удалены company_before_contact / customer_before_quote.
+#
+# Почему: ticket_create(subject: str) и sales_quote(product: str) — у обоих
+# инструментов НЕТ параметра customer_id/company_id в схеме MCP-мока
+# (см. benchmark/mcp_tool_registry.py). Правило "сначала customer_get ДЛЯ
+# ЭТОГО клиента, потом тикет ДЛЯ НЕГО" структурно не может быть проверено —
+# тикет/КП физически не ссылается на клиента, значит это не workflow-цепочка
+# для конкретной сущности, а самостоятельная операция.
+#
+# В каталоге бенчмарка ticket_create/sales_quote регулярно вызываются
+# как generic-операции без привязки к клиенту (внутренний инцидент SSE,
+# security review, коммерческое предложение на продукт без клиента) — 12+
+# сценариев (s06_004, s06_006, s06_007, s08_002, s08_006, s08_012,
+# creative_a_004, creative_b_002, creative_b_007, creative_d_002) ложно
+# блокировались этим правилом.
+#
+# Тип правила require_prior_success остаётся в guardrails.py (unit-тесты
+# покрывают) — можно вернуть в этот YAML для тестов, где ticket_create/
+# sales_quote ДЕЙСТВИТЕЛЬНО получит customer_id-параметр в схеме.
+
+post_tool:
+  - id: customer_get_fields
+    type: require_substrings
+    tool: customer_get
+    required:
+      - CUSTOMER=
+      - TIER=
+    message: "Ответ customer_get не содержит обязательных полей CUSTOMER/TIER."
+
+  - id: ticket_create_fields
+    type: require_substrings
+    tool: ticket_create
+    required:
+      - TICKET_ID=
+      - status=
+    message: "Ответ ticket_create не содержит TICKET_ID или status."

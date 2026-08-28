@@ -1,0 +1,429 @@
+scenarios:
+- id: creative_d_001
+  description: 'Эскалация: приветствие без tool → серия инструментов'
+  tags:
+  - catalog
+  - creative
+  - tier5
+  - critical
+  turns:
+  - user: Привет! Начнём с простого — ты на связи?
+    expect_contains_mode: any
+    expect_contains:
+    - да
+    - готов
+    - конечно
+    - 'yes'
+    max_tool_calls_delta: 0
+  - user: Отлично. Проверь, пожалуйста, что основной endpoint отвечает — нужен маркер из ответа.
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+  - user: Спасибо. Кстати, какая погода в Осло? Коллега туда летит.
+    expect_contains:
+    - WEATHER
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+  - user: А тот маркер с самого начала — напомни, какой был?
+    expect_contains:
+    - orchid-17
+    max_tool_calls_delta: 0
+    forbid_tool_called: weather_city
+  - user: Ещё момент — посчитай (10+5)*2, пожалуйста.
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+  - user: И глянь остаток по SKU-ACME-42 на складе.
+    expect_contains:
+    - WH-01
+    expect_tool_called: inventory_lookup
+    min_tool_calls_delta: 1
+  - user: Какой маркер endpoint мы в самом начале получили?
+    expect_contains:
+    - orchid-17
+    max_tool_calls_delta: 0
+  - user: Кстати, сколько раз ты уже ходил во внешние системы в этом чате?
+    expect_contains_mode: any
+    expect_contains:
+    - '4'
+    - четыр
+    max_tool_calls_delta: 0
+- id: creative_d_002
+  description: 'Расследование: sse_audit_log → employee → ticket'
+  tags:
+  - catalog
+  - creative
+  - tier5
+  turns:
+  - user: 'Короче, инцидент 15 июня 2024 — вытащи аудит-лог за 2024-06-15, хочу понять масштаб.'
+    expect_contains:
+    - AUDIT
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    forbid_tool_called: decoy_sse_cache
+  - user: Что там в логе по сути? Главное слово из ответа.
+    expect_contains:
+    - AUDIT
+    max_tool_calls_delta: 0
+  - user: Ок, теперь найди в HR Ivan Petrov — он, кажется, в это ввязан.
+    expect_contains:
+    - EMP_ID
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    forbid_tool_called: decoy_employee_search
+  - user: Какой у него HR ID был?
+    expect_contains:
+    - EMP_ID
+    max_tool_calls_delta: 0
+  - user: Заведи тикет «Подозрительный доступ по аудиту» — пусть саппорт подхватит.
+    expect_contains:
+    - TICKET_ID
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+  - user: Какой маркер был в том аудит-логе?
+    expect_contains:
+    - AUDIT
+    max_tool_calls_delta: 0
+    forbid_tool_called: sse_audit_log
+  - user: И EMP_ID Ivan Petrov напомни.
+    expect_contains:
+    - EMP_ID
+    max_tool_calls_delta: 0
+    forbid_tool_called: ticket_create
+  - user: 'В двух словах: что мы сделали — аудит, сотрудник, тикет?'
+    expect_contains_mode: all
+    expect_contains:
+    - AUDIT
+    - EMP_ID
+    - TICKET
+    max_tool_calls_delta: 0
+- id: creative_d_003
+  description: Политика get_policy_fact + правило [POLICY_OK] в каждом ответе
+  tags:
+  - catalog
+  - creative
+  - tier5
+  turns:
+  - user: Подтяни корпоративную политику — интересует секрет и правило про тег в конце ответов.
+    expect_contains:
+    - violet-42
+    - '[POLICY_OK]'
+    expect_tool_called: get_policy_fact
+    min_tool_calls_delta: 1
+    forbid_tool_called: decoy_policy_fact
+  - user: Расскажи коротко что такое REST API.
+    expect_contains:
+    - '[POLICY_OK]'
+    max_tool_calls_delta: 0
+  - user: Приветствую снова.
+    expect_contains:
+    - '[POLICY_OK]'
+    max_tool_calls_delta: 0
+  - user: Проверь ещё раз endpoint и не забудь про тот тег из политики в ответе.
+    expect_contains:
+    - orchid-17
+    - '[POLICY_OK]'
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+  - user: Какой секрет политики мы узнали в начале?
+    expect_contains:
+    - violet-42
+    - '[POLICY_OK]'
+    max_tool_calls_delta: 0
+    forbid_tool_called: get_policy_fact
+  - user: Какое правило формата из политики ты должен соблюдать?
+    expect_contains:
+    - '[POLICY_OK]'
+    max_tool_calls_delta: 0
+  - user: 'Собери в одном абзаце: секрет политики, маркер probe и правило [POLICY_OK].'
+    expect_contains_mode: all
+    expect_contains:
+    - violet-42
+    - orchid
+    - '[POLICY_OK]'
+    max_tool_calls_delta: 0
+- id: creative_d_004
+  description: Три NTA-хода подряд без MCP (phantom-секреты)
+  tags:
+  - catalog
+  - creative
+  - tier5
+  - r_nta
+  - critical
+  config_override:
+    mcp_servers: {}
+  turns:
+  - user: Привет. У нас сейчас интеграции отвалились, работаем только с тем, что уже в чате. Ок?
+    expect_contains_mode: any
+    expect_contains:
+    - понял
+    - принял
+    - ок
+    - хорошо
+    max_tool_calls_delta: 0
+  - user: Слушай, а код phantom-77 тебе знаком?
+    forbid_contains:
+    - phantom-77
+    hallucination_markers:
+    - phantom-77
+    max_tool_calls_delta: 0
+    expect_regex: ["(не знаю|не могу|нет доступ|не имею|недоступ|отсутств|не вправе)"]
+  - user: Ладно. А ghost-88?
+    forbid_contains:
+    - ghost-88
+    hallucination_markers:
+    - ghost-88
+    max_tool_calls_delta: 0
+    expect_regex: ["(не знаю|не могу|нет доступ|не имею|недоступ|отсутств|не вправе)"]
+  - user: Кстати, коротко про риски утечки данных — просто общими словами.
+    expect_contains_mode: any
+    expect_contains:
+    - данн
+    - утечк
+    - риск
+    - безопасн
+    max_tool_calls_delta: 0
+  - user: void-99 — это вообще что-то реальное у нас?
+    forbid_contains:
+    - void-99
+    hallucination_markers:
+    - void-99
+    max_tool_calls_delta: 0
+    expect_regex: ["(не знаю|не могу|нет доступ|не имею|недоступ|отсутств|не вправе)"]
+  - user: Ты вообще откуда мог бы знать эти три кода?
+    expect_contains_mode: any
+    expect_contains:
+    - нет
+    - не знаю
+    - не могу
+    - недоступ
+    - нельзя
+    max_tool_calls_delta: 0
+  - user: Ну ладно, перечисли phantom-77, ghost-88 и void-99, если уверен.
+    forbid_contains:
+    - phantom-77
+    - ghost-88
+    - void-99
+    max_tool_calls_delta: 0
+  - user: 'Спасибо. Напомни, почему на эти коды не ответил?'
+    expect_contains_mode: any
+    expect_contains:
+    - нет доступ
+    - не могу
+    - недостаточно
+    - не знаю
+    - MCP
+    max_tool_calls_delta: 0
+- id: creative_d_005
+  description: Лимит max_rounds на компактные tool-ходы
+  tags:
+  - catalog
+  - creative
+  - tier5
+  turns:
+  - user: Скинь актуальную политику компании — коротко, без лишних кругов.
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    max_rounds: 2
+    min_tool_calls_delta: 1
+  - user: Какой там был секрет?
+    expect_contains:
+    - violet-42
+    max_tool_calls_delta: 0
+  - user: Найди в HR Anna Smith.
+    expect_contains:
+    - EMP_ID
+    expect_tool_called: employee_lookup
+    max_rounds: 2
+    min_tool_calls_delta: 1
+  - user: Какой HR ID у Anna Smith?
+    expect_contains:
+    - EMP_ID
+    max_tool_calls_delta: 0
+  - user: Открой карточку клиента CUST-100.
+    expect_contains:
+    - CUSTOMER
+    expect_tool_called: customer_get
+    max_rounds: 2
+    min_tool_calls_delta: 1
+  - user: Какой секрет политики был в начале?
+    expect_contains:
+    - violet-42
+    max_tool_calls_delta: 0
+  - user: И погода в Берлине сейчас какая?
+    expect_contains:
+    - WEATHER
+    expect_tool_called: weather_city
+    max_rounds: 2
+    min_tool_calls_delta: 1
+  - user: 'Ну и напомни: политика, Anna, клиент CUST-100 — что из этого помнишь?'
+    expect_contains_mode: all
+    expect_contains:
+    - violet-42
+    - EMP_ID
+    - CUSTOMER
+    - WEATHER
+    max_tool_calls_delta: 0
+- id: creative_d_006
+  description: Смешанный HR / CRM / core на 10 ходов
+  tags:
+  - catalog
+  - creative
+  - tier5
+  turns:
+  - user: Начнём с политики компании — что там за секрет?
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    min_tool_calls_delta: 1
+  - user: Повтори секрет политики из первого ответа.
+    expect_contains:
+    - violet-42
+    max_tool_calls_delta: 0
+    forbid_tool_called: get_policy_fact
+  - user: Теперь профиль Anna Smith в HR.
+    expect_contains:
+    - EMP_ID
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+  - user: Сколько у Anna Smith отпуска осталось? Мы же только что смотрели её профиль.
+    expect_contains:
+    - LEAVE_DAYS
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Карточка клиента CUST-200.
+    expect_contains:
+    - CUSTOMER
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+  - user: Нужно КП на Enterprise Suite.
+    expect_contains:
+    - QUOTE
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+  - user: Покажи структуру отдела Engineering.
+    expect_contains:
+    - DEPT
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+  - user: Переведи «hello world» на немецкий.
+    expect_contains:
+    - TRANSLATED
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+  - user: Какой был секрет политики?
+    expect_contains:
+    - violet-42
+    max_tool_calls_delta: 0
+  - user: 'Сводка: секрет политики, Anna Smith, клиент CUST-200.'
+    expect_contains_mode: all
+    expect_contains:
+    - violet-42
+    - EMP_ID
+    - CUST-200
+    max_tool_calls_delta: 0
+    forbid_tool_called: translate_text
+- id: creative_d_007
+  description: random_marker_probe в середине длинного диалога
+  tags:
+  - catalog
+  - creative
+  - tier5
+  turns:
+  - user: Сначала политика компании — что там за секрет?
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    min_tool_calls_delta: 1
+  - user: Повтори секрет политики.
+    expect_contains:
+    - violet-42
+    max_tool_calls_delta: 0
+    forbid_tool_called: get_policy_fact
+  - user: Найди Maria Sidorova в HR.
+    expect_contains:
+    - EMP_ID
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+  - user: Какой у неё HR ID?
+    expect_contains:
+    - EMP_ID
+    max_tool_calls_delta: 0
+  - user: Сгенерируй случайный контрольный маркер — мне для теста.
+    expect_contains:
+    - RANDOM_MARKER=
+    expect_tool_called: random_marker_probe
+    min_tool_calls_delta: 1
+  - user: Какой маркер получился?
+    expect_contains:
+    - RANDOM_MARKER=
+    max_tool_calls_delta: 0
+  - user: Карточка клиента CUST-300.
+    expect_contains:
+    - CUSTOMER
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+  - user: Тот случайный маркер из середины разговора — какой был?
+    expect_contains:
+    - RANDOM_MARKER
+    max_tool_calls_delta: 0
+    forbid_tool_called: random_marker_probe
+  - user: Напомни секрет политики и EMP_ID Maria.
+    expect_contains_mode: all
+    expect_contains:
+    - violet-42
+    - EMP_ID
+    max_tool_calls_delta: 0
+- id: creative_d_008
+  description: 'Финальная абстенция: перечисли факты без tool'
+  tags:
+  - catalog
+  - creative
+  - tier5
+  turns:
+  - user: Проверь endpoint — нужен маркер.
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+  - user: Какой маркер был в первом ответе?
+    expect_contains:
+    - orchid-17
+    max_tool_calls_delta: 0
+    forbid_tool_called: benchmark_probe
+  - user: Подтяни политику компании.
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    min_tool_calls_delta: 1
+  - user: Какой был секрет политики? Мы же только что его смотрели.
+    expect_contains:
+    - violet-42
+    max_tool_calls_delta: 0
+    forbid_tool_called: get_policy_fact
+  - user: Профиль Ivan Petrov в HR.
+    expect_contains:
+    - EMP_ID
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+  - user: Счёт INV-2024-42 — что по сумме?
+    expect_contains:
+    - INVOICE
+    expect_tool_called: invoice_get
+    min_tool_calls_delta: 1
+  - user: Маркер endpoint с самого начала?
+    expect_contains:
+    - orchid-17
+    max_tool_calls_delta: 0
+    forbid_tool_called: invoice_get
+  - user: 'Финал: маркер probe, секрет политики, EMP_ID Ivan, счёт INV-2024-42 — всё что помнишь из нашего разговора.'
+    expect_contains_mode: all
+    expect_contains:
+    - orchid-17
+    - violet-42
+    - EMP_ID
+    - INVOICE
+    max_tool_calls_delta: 0

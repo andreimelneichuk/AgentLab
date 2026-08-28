@@ -1,0 +1,207 @@
+# Benchmark scenarios: catalog S02 — doc / inventory / invoice lookup
+scenarios:
+  - id: s02_001
+    description: "Разработчик ищет документацию по asyncio через правильный tool, не decoy"
+    tags: [catalog, s02, tier1, tool]
+    turns:
+      - user: "Нужна дока по asyncio — как корутины запускать и event loop юзать"
+        expect_contains: ["REF=PYDOC-778", "asyncio"]
+        expect_tool_called: python_doc_lookup
+        forbid_tool_called: decoy_python_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          topic: asyncio
+
+  - id: s02_002
+    description: "Тимлид просит объяснить decorators с примерами — lookup на первом ходу, recall без tool на втором"
+    tags: [catalog, s02, tier2, tool, instruction]
+    turns:
+      - user: "Объясни decorators в Python на примерах — глянь актуальную доку"
+        expect_contains: ["REF=PYDOC-778", "decorator"]
+        expect_tool_called: python_doc_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          topic: decorators
+      - user: "Ок, а какие примеры использования там были? Коротко перечисли"
+        expect_contains: ["decorator"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: python_doc_lookup
+
+  - id: s02_003
+    description: "r_dt: пользователь говорит «найди в документации» — агент выбирает python_doc_lookup, не decoy"
+    tags: [catalog, s02, tier1, tool, r_dt]
+    turns:
+      - user: "Глянь в доке всё про generators в Python"
+        expect_contains: ["REF=PYDOC-778", "generator"]
+        expect_tool_called: python_doc_lookup
+        forbid_tool_called: decoy_python_lookup
+        min_tool_calls_delta: 1
+
+  - id: s02_004
+    description: "r_dt: «проверь документацию по contextmanager» — правильный tool, запрет decoy"
+    tags: [catalog, s02, tier1, tool, r_dt]
+    turns:
+      - user: "Глянь доку по contextmanager — хочу понять как нормально делать __enter__/__exit__"
+        expect_contains: ["REF=PYDOC-778", "contextmanager"]
+        expect_tool_called: python_doc_lookup
+        forbid_tool_called: decoy_python_lookup
+        forbid_contains: ["REF=FAKE-999"]
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          topic: contextmanager
+
+  - id: s02_005
+    description: "Менеджер склада проверяет наличие SKU-3001 перед размещением заказа"
+    tags: [catalog, s02, tier1, tool]
+    turns:
+      - user: "SKU-3001 есть на складе? Планируем закупку на след неделе"
+        expect_contains: ["WH-01", "qty"]
+        expect_tool_called: inventory_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          sku: SKU-3001
+
+  - id: s02_006
+    description: "Срочная проверка остатка SKU-7777 перед отгрузкой с expect_tool_args"
+    tags: [catalog, s02, tier1, tool]
+    turns:
+      - user: "Срочно! Водитель у ворот ждёт — сколько SKU-7777 на складе?"
+        expect_contains: ["WH-01", "qty"]
+        expect_tool_called: inventory_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          sku: SKU-7777
+
+  - id: s02_007
+    description: "r_dt: «найди товар на складе» — правильный inventory_lookup, не decoy_inventory_lookup"
+    tags: [catalog, s02, tier1, tool, r_dt]
+    turns:
+      - user: "Сколько SKU-5500 на складе? Нужно точное количество"
+        expect_contains: ["WH-01", "qty"]
+        expect_tool_called: inventory_lookup
+        forbid_tool_called: decoy_inventory_lookup
+        forbid_contains: ['"qty": 0']
+        min_tool_calls_delta: 1
+
+  - id: s02_008
+    description: "3 хода: остаток SKU-4200 → решение о заказе → подтверждение без tool"
+    tags: [catalog, s02, tier2, tool, instruction]
+    turns:
+      - user: "Сколько сейчас SKU-4200 на складе?"
+        expect_contains: ["WH-01", "qty"]
+        expect_tool_called: inventory_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          sku: SKU-4200
+      - user: "Если больше нуля — отгрузку можно делать?"
+        expect_contains: ["SKU-4200"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: inventory_lookup
+      - user: "Окей, напомни сколько там было"
+        expect_contains: ["SKU-4200"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: inventory_lookup
+
+  - id: s02_009
+    description: "Бухгалтер запрашивает счёт INV-2024-101 для подготовки платежа"
+    tags: [catalog, s02, tier1, tool]
+    turns:
+      - user: "Надо провести платёж — скинь счёт INV-2024-101"
+        expect_contains: ["INVOICE=INV-2024-101", "AMOUNT="]
+        expect_tool_called: invoice_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          invoice_id: INV-2024-101
+
+  - id: s02_010
+    description: "Финотдел запрашивает INV-2025-007 с expect_tool_args, 2 хода: получить + пересказать сумму"
+    tags: [catalog, s02, tier2, tool, instruction]
+    turns:
+      - user: "Открой счёт INV-2025-007 — нужен для квартального сверочного акта"
+        expect_contains: ["INVOICE=INV-2025-007", "AMOUNT="]
+        expect_tool_called: invoice_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          invoice_id: INV-2025-007
+      - user: "А какая там итоговая сумма?"
+        expect_contains: ["AMOUNT", "INV-2025-007"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: invoice_get
+
+  - id: s02_011
+    description: "3 хода: накладная INV-500 → recall суммы без повторного вызова → финальное подтверждение"
+    tags: [catalog, s02, tier2, tool, instruction]
+    turns:
+      - user: "Скинь накладную INV-500 — надо проверить сумму"
+        expect_contains: ["INVOICE=INV-500", "AMOUNT="]
+        expect_tool_called: invoice_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          invoice_id: INV-500
+      - user: "Перепроверь сумму — мы же только что смотрели?"
+        expect_contains: ["AMOUNT", "INV-500"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: invoice_get
+      - user: "Всё, ок. INV-500 обработана нормально?"
+        expect_contains: ["INV-500"]
+        max_tool_calls_delta: 0
+
+  - id: s02_012
+    description: "SKU-0000 (несуществующий) — честный ответ об отсутствии позиции через inventory_lookup"
+    tags: [catalog, s02, tier1, tool, negative]
+    turns:
+      - user: "SKU-0000 на складе есть? Должен был на прошлой неделе прийти"
+        expect_contains: ["NOT_FOUND", "0", "не найден", "отсутств", "нет"]
+        expect_contains_mode: any
+        forbid_contains: ["WH-01"]
+        expect_tool_called: inventory_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          sku: SKU-0000
+
+  - id: s02_013
+    description: "4 хода cross: doc lookup + inventory + invoice + финальный recall трёх фактов без tool"
+    tags: [catalog, s02, tier3, tool, instruction, critical]
+    turns:
+      - user: "Глянь доку по dataclasses в Python"
+        expect_contains: ["REF=PYDOC-778", "dataclass"]
+        expect_tool_called: python_doc_lookup
+        forbid_tool_called: decoy_python_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          topic: dataclasses
+      - user: "Теперь глянь SKU-1010 на складе"
+        expect_contains: ["WH-01", "qty"]
+        expect_tool_called: inventory_lookup
+        forbid_tool_called: decoy_inventory_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          sku: SKU-1010
+      - user: "И счёт INV-2024-999 для финотдела"
+        expect_contains: ["INVOICE=INV-2024-999", "AMOUNT="]
+        expect_tool_called: invoice_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          invoice_id: INV-2024-999
+      - user: "Собери всё в одном ответе — dataclasses, сколько SKU-1010 и сумма INV-2024-999"
+        expect_contains: ["REF=PYDOC-778", "SKU-1010", "INV-2024-999"]
+        max_tool_calls_delta: 0
+        forbid_tools_called: [python_doc_lookup, inventory_lookup, invoice_get]
+
+  - id: s02_014
+    description: "r_dt 2 хода: python_doc НЕ decoy + recall REF без повторного вызова"
+    tags: [catalog, s02, tier2, tool, r_dt, instruction]
+    turns:
+      - user: "Нужна справка по typing.Protocol — глянь в официальной доке Python, только актуальную, не через какой-нибудь быстрый устаревший поиск"
+        expect_contains: ["REF=PYDOC-778", "Protocol"]
+        expect_tool_called: python_doc_lookup
+        forbid_tool_called: decoy_python_lookup
+        forbid_contains: ["REF=FAKE-999"]
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          topic: typing.Protocol
+      - user: "Какой id ссылки там был? Напомни"
+        expect_contains: ["REF=PYDOC-778"]
+        forbid_contains: ["REF=FAKE-999"]
+        max_tool_calls_delta: 0
+        forbid_tools_called: [python_doc_lookup, decoy_python_lookup]

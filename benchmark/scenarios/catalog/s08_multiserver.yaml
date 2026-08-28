@@ -1,0 +1,683 @@
+scenarios:
+- id: s08_001
+  description: 'Полный онбординг нового сотрудника: HR-профиль, орг-структура, погода
+    в офисе, финский перевод'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  turns:
+  - user: В понедельник выходит Elena Petrova — найди её в HR, хочу подготовиться
+    expect_contains:
+    - EMP_ID=HR-
+    - Elena Petrova
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Elena Petrova
+  - user: Отлично. Покажи орг-структуру отдела Marketing — кто за него отвечает.
+    expect_contains:
+    - DEPT=Marketing
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Marketing
+  - user: Elena едет в наш офис в Хельсинки. Проверь погоду там.
+    expect_contains:
+    - WEATHER
+    - Helsinki
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Helsinki
+  - user: Подготовь финское приветствие для Елены — переведи 'Welcome to the team,
+      Elena!' на финский.
+    expect_contains:
+    - TRANSLATED[fi]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      target_lang: fi
+      text: Welcome to the team, Elena!
+  - user: По её HR-профилю из начала разговора — в каком отделе Elena Petrova и кто там руководитель?
+    expect_contains:
+    - Elena Petrova
+    - Engineering
+    max_tool_calls_delta: 0
+    forbid_tool_called: translate_text
+  - user: 'Сводка онбординга одним блоком: имя и HR ID Elena, отдел, погода в Хельсинки,
+      финское приветствие'
+    expect_contains:
+    - Elena Petrova
+    - Helsinki
+    - TRANSLATED[fi]
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_002
+  description: 'Реакция на прод-инцидент: аудит-лог SSE, дежурный инженер, тикет,
+    политика, healthcheck, recall'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  - critical
+  turns:
+  - user: Сбой в проде. Вытащи журнал SSE-событий за 2024-06-15 — хочу понять масштаб
+    expect_contains:
+    - AUDIT
+    - '2024-06-15'
+    - events=3
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-06-15'
+  - user: Найди дежурного Dmitry Sokolov — он берёт инцидент
+    expect_contains:
+    - EMP_ID=HR-
+    - Dmitry Sokolov
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Dmitry Sokolov
+  - user: 'Создай тикет с темой ''Production incident 2024-06-15: SSE audit anomaly''.'
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: 'Production incident 2024-06-15: SSE audit anomaly'
+  - user: По регламенту нужна актуальная политика безопасности — возьми из официального
+      источника
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    forbid_tool_called: decoy_policy_fact
+    min_tool_calls_delta: 1
+  - user: Сделай базовую проверку, что система живая — нужен контрольный маркер
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+  - user: 'Собери факты по инциденту: дата из журнала, имя дежурного и номер тикета'
+    expect_contains:
+    - '2024-06-15'
+    - Dmitry Sokolov
+    - TK-
+    max_tool_calls_delta: 0
+    forbid_tool_called: benchmark_probe
+  - user: 'И напомни контрольный маркер системы и правило из политики безопасности'
+    expect_contains:
+    - orchid-17
+    - violet-42
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_003
+  description: 'Полная квалификация клиента: CRM-профиль, коммерческий оффер, счёт,
+    расчёт ROI, recall'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  turns:
+  - user: Надо разобраться с клиентом C-2024-777 — открой его профиль в CRM
+    expect_contains:
+    - CUSTOMER=C-2024-777
+    - TIER=gold
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-2024-777
+  - user: Подготовь коммерческое предложение — продукт называется EnterpriseCloud.
+    expect_contains:
+    - QUOTE
+    - price_usd=
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      product: EnterpriseCloud
+  - user: Открой счёт INV-Q3-2024 — клиент раньше покупал у нас, хочу сверить историю
+    expect_contains:
+    - INVOICE=INV-Q3-2024
+    - AMOUNT=
+    expect_tool_called: invoice_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      invoice_id: INV-Q3-2024
+  - user: 'Посчитай ROI: клиент вложил 12500, ожидаемая выручка от EnterpriseCloud
+      — 50000. Формула: (50000-12500)/12500*100.'
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: (50000-12500)/12500*100
+  - user: 'Коротко: какой сегмент у C-2024-777 и какой продукт в оффере?'
+    expect_contains:
+    - C-2024-777
+    - EnterpriseCloud
+    max_tool_calls_delta: 0
+  - user: 'Теперь полный финансовый итог: сумма счёта, цена оффера и ROI'
+    expect_contains:
+    - AMOUNT=
+    - QUOTE
+    - RESULT=
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_004
+  description: 'Подготовка командировки в Сингапур: погода, перевод брифинга на китайский,
+    контакт на месте, recall'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  turns:
+  - user: Планируется командировка в Сингапур. Проверь текущую погоду там.
+    expect_contains:
+    - WEATHER
+    - Singapore
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Singapore
+  - user: 'Переведи брифинг на китайский: ''The partnership meeting is scheduled for
+      Thursday at 14:00 local time.'''
+    expect_contains:
+    - TRANSLATED[zh]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      target_lang: zh
+      text: The partnership meeting is scheduled for Thursday at 14:00 local time.
+  - user: Найди на месте James Chen — наш контакт в Сингапуре
+    expect_contains:
+    - EMP_ID=HR-
+    - James Chen
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: James Chen
+  - user: Напомни погоду в Сингапуре и перевод брифинга на китайский
+    expect_contains:
+    - Singapore
+    - TRANSLATED[zh]
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+  - user: 'Итог командировки: контакт James Chen с HR ID, город и перевод брифинга'
+    expect_contains:
+    - James Chen
+    - Singapore
+    - TRANSLATED[zh]
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_005
+  description: 'Финансовый аудит: два счёта, суммирование расходов, остатки склада,
+    финансовый recall'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  turns:
+  - user: Начинаем бюджетный аудит. Открой первый счёт — INV-2024-A01
+    expect_contains:
+    - INVOICE=INV-2024-A01
+    - AMOUNT=
+    expect_tool_called: invoice_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      invoice_id: INV-2024-A01
+  - user: Теперь второй — INV-2024-B02
+    expect_contains:
+    - INVOICE=INV-2024-B02
+    - AMOUNT=
+    expect_tool_called: invoice_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      invoice_id: INV-2024-B02
+  - user: 'Оба счёта на сумму 12500 каждый. Посчитай суммарный расход: 12500+12500.'
+    expect_contains:
+    - RESULT=25000
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: 12500+12500
+  - user: Проверь остатки по артикулу SKU-8800 — сверяем с накладными.
+    expect_contains:
+    - SKU-8800
+    - WH-01
+    expect_tool_called: inventory_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      sku: SKU-8800
+  - user: Какие два счёта мы смотрели и какой суммарный расход получился?
+    expect_contains:
+    - INV-2024-A01
+    - INV-2024-B02
+    - '25000'
+    max_tool_calls_delta: 0
+  - user: 'Финансовое резюме: оба счёта, итоговая сумма, наличие SKU-8800 на складе.'
+    expect_contains:
+    - INV-2024-A01
+    - '25000'
+    - SKU-8800
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_006
+  description: 'DevSecOps-процедура: SSE healthcheck, аудит-лог, политика, офицер
+    безопасности, тикет, recall'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  turns:
+  - user: Начинаем DevSecOps-процедуру. Сначала проверь, что SSE endpoint живой
+    expect_contains:
+    - amber-91
+    expect_tool_called: benchmark_sse_probe
+    min_tool_calls_delta: 1
+  - user: SSE в порядке. Вытащи журнал событий за 2024-07-01
+    expect_contains:
+    - AUDIT
+    - '2024-07-01'
+    - events=3
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-07-01'
+  - user: Нужно актуальное правило политики безопасности — возьми из официального источника
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    forbid_tool_called: decoy_policy_fact
+    min_tool_calls_delta: 1
+  - user: Найди офицера безопасности Olga Smirnova
+    expect_contains:
+    - EMP_ID=HR-
+    - Olga Smirnova
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Olga Smirnova
+  - user: 'Создай тикет: ''Security review required: SSE audit 2024-07-01''.'
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: 'Security review required: SSE audit 2024-07-01'
+  - user: Какой маркер SSE и какое правило политики мы получили?
+    expect_contains:
+    - amber-91
+    - violet-42
+    max_tool_calls_delta: 0
+  - user: 'Финальный протокол DevSecOps: офицер безопасности, номер тикета, дата
+      аудита'
+    expect_contains:
+    - Olga Smirnova
+    - TK-
+    - '2024-07-01'
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_007
+  description: 'Международная сделка: CRM-профиль клиента Dubai, оффер, перевод контракта
+    на арабский, погода, recall'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  turns:
+  - user: Готовим крупную сделку — открой профиль клиента C-DUBAI-01 в CRM
+    expect_contains:
+    - CUSTOMER=C-DUBAI-01
+    - TIER=gold
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-DUBAI-01
+  - user: Подготовь коммерческое предложение — продукт называется GlobalSuite.
+    expect_contains:
+    - QUOTE
+    - price_usd=
+    - valid_days=30
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      product: GlobalSuite
+  - user: 'Переведи ключевой пункт контракта на арабский: ''This agreement is governed
+      by the laws of the UAE.'''
+    expect_contains:
+    - TRANSLATED[ar]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      target_lang: ar
+      text: This agreement is governed by the laws of the UAE.
+  - user: Проверь погоду в Дубае — там штаб-квартира клиента.
+    expect_contains:
+    - WEATHER
+    - Dubai
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Dubai
+  - user: Напомни сегмент C-DUBAI-01 и на сколько дней оформлен оффер
+    expect_contains:
+    - C-DUBAI-01
+    - valid_days=30
+    max_tool_calls_delta: 0
+  - user: 'Итог сделки: ID клиента, продукт, арабский перевод контракта, погода в
+      Дубае.'
+    expect_contains:
+    - C-DUBAI-01
+    - GlobalSuite
+    - TRANSLATED[ar]
+    - Dubai
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_008
+  description: 'HR-аналитика: профиль сотрудника, баланс отпуска, расчёт стоимости
+    замены, recall'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  turns:
+  - user: Нужен разбор по Sergei Nikolaev — сначала найди его в HR
+    expect_contains:
+    - EMP_ID=HR-
+    - Sergei Nikolaev
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Sergei Nikolaev
+  - user: Сколько дней отпуска у Sergei осталось?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: 'Посчитай стоимость замены сотрудника: средняя зарплата 8500 в месяц, рекрутинг
+      = 3 зарплаты. Формула: 8500*3.'
+    expect_contains:
+    - RESULT=25500
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: 8500*3
+  - user: 'Напомни: как зовут сотрудника, его HR ID и сколько дней отпуска осталось'
+    expect_contains:
+    - Sergei Nikolaev
+    - LEAVE_DAYS=
+    max_tool_calls_delta: 0
+  - user: 'Итоговый HR-отчёт: сотрудник, остаток отпуска, расчётная стоимость замены.'
+    expect_contains:
+    - Sergei Nikolaev
+    - '25500'
+    - LEAVE_DAYS=
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_009
+  description: 'Полный CRM-цикл VIP-клиента: профиль, тикет, оффер, Python docs, склад,
+    финальный квиз без tool'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  - critical
+  turns:
+  - user: Открой карточку VIP-клиента C-VIP-999 в CRM
+    expect_contains:
+    - CUSTOMER=C-VIP-999
+    - TIER=gold
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-VIP-999
+  - user: 'Создай сервисный тикет для этого клиента: ''VIP client C-VIP-999: onboarding
+      request''.'
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: 'VIP client C-VIP-999: onboarding request'
+  - user: Подготовь оффер — продукт PlatinumPlan.
+    expect_contains:
+    - QUOTE
+    - price_usd=
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      product: PlatinumPlan
+  - user: Клиент просит техдокументацию — найди docs по Pydantic в Python.
+    expect_contains:
+    - REF=PYDOC-778
+    - pydantic
+    expect_tool_called: python_doc_lookup
+    forbid_tool_called: decoy_python_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      topic: pydantic
+  - user: Проверь наличие на складе компонента SKU-2200.
+    expect_contains:
+    - SKU-2200
+    - WH-01
+    expect_tool_called: inventory_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      sku: SKU-2200
+  - user: 'Итог по C-VIP-999: номер тикета, оффер и есть ли SKU-2200 на складе'
+    expect_contains:
+    - C-VIP-999
+    - TK-
+    - PlatinumPlan
+    - SKU-2200
+    max_tool_calls_delta: 0
+    forbid_tool_called: inventory_lookup
+  - user: 'Последний вопрос: ссылка на Python docs и регион клиента C-VIP-999'
+    expect_contains:
+    - PYDOC-778
+    - EMEA
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_010
+  description: 'Комплексный healthcheck трёх MCP-серверов: streamable, SSE, random
+    marker, recall всех трёх'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  - smoke
+  turns:
+  - user: 'Запускаем комплексную проверку. Сначала — streamable endpoint, жив ли он'
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+  - user: 'Теперь то же для SSE endpoint — нужен его маркер'
+    expect_contains:
+    - amber-91
+    expect_tool_called: benchmark_sse_probe
+    min_tool_calls_delta: 1
+  - user: 'И ещё случайный контрольный маркер системы'
+    expect_contains:
+    - RANDOM_MARKER=
+    expect_tool_called: random_marker_probe
+    min_tool_calls_delta: 1
+  - user: Перечисли все три маркера, которые мы только что получили
+    expect_contains:
+    - orchid-17
+    - amber-91
+    - RANDOM_MARKER=
+    max_tool_calls_delta: 0
+    forbid_tool_called: random_marker_probe
+  - user: 'Итог проверки: streamable и SSE endpoint — оба маркера подтверждают, что
+      всё работает?'
+    expect_contains:
+    - orchid-17
+    - amber-91
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_011
+  description: 'Глобальный отчёт: 4 инструмента с разных серверов, 4 чередующихся
+    recall-хода, финальная сводка'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  turns:
+  - user: Начинаем глобальный отчёт. Сначала найди Fatima Al-Hassan в HR
+    expect_contains:
+    - EMP_ID=HR-
+    - Fatima Al-Hassan
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Fatima Al-Hassan
+  - user: Открой карточку клиента C-APAC-300 в CRM
+    expect_contains:
+    - CUSTOMER=C-APAC-300
+    - TIER=gold
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-APAC-300
+  - user: Вытащи журнал SSE-событий за 2024-09-10
+    expect_contains:
+    - AUDIT
+    - '2024-09-10'
+    - events=3
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-09-10'
+  - user: Нужна актуальная политика безопасности — официальный факт
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    forbid_tool_called: decoy_policy_fact
+    min_tool_calls_delta: 1
+  - user: Как зовут сотрудника из HR и в каком она отделе?
+    expect_contains:
+    - Fatima Al-Hassan
+    max_tool_calls_delta: 0
+  - user: А по клиенту из CRM — какой у него тир и регион?
+    expect_contains:
+    - C-APAC-300
+    - TIER=gold
+    max_tool_calls_delta: 0
+    forbid_tool_called: get_policy_fact
+  - user: Сколько событий было в журнале за 2024-09-10?
+    expect_contains:
+    - events=3
+    - '2024-09-10'
+    max_tool_calls_delta: 0
+  - user: 'Собери финальный глобальный отчёт: сотрудник, клиент, события аудита,
+      правило политики'
+    expect_contains:
+    - Fatima Al-Hassan
+    - C-APAC-300
+    - violet-42
+    - events=3
+    expect_contains_mode: all
+    max_tool_calls_delta: 0
+- id: s08_012
+  description: 'Полный жизненный цикл: инициация, эскалация SSE, CRM, политика, SLA-штраф,
+    перевод, квиз (10 ходов)'
+  tags:
+  - catalog
+  - tool
+  - long_horizon
+  - multiserver
+  - critical
+  turns:
+  - user: Поступил критический запрос. Найди сотрудника Viktor Kozlov — он инициатор
+      обращения.
+    expect_contains:
+    - EMP_ID=HR-
+    - Viktor Kozlov
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Viktor Kozlov
+  - user: Похоже, аномалия в SSE. Вытащи журнал событий за 2024-12-01
+    expect_contains:
+    - AUDIT
+    - '2024-12-01'
+    - events=3
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-12-01'
+  - user: Проверь, что SSE живой — нужен маркер для протокола эскалации
+    expect_contains:
+    - amber-91
+    expect_tool_called: benchmark_sse_probe
+    min_tool_calls_delta: 1
+  - user: 'Создай тикет для эскалации: ''Critical escalation: SSE anomaly 2024-12-01
+      by Viktor Kozlov''.'
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: 'Critical escalation: SSE anomaly 2024-12-01 by Viktor Kozlov'
+  - user: Открой карточку клиента C-EMEA-007 — от него пришёл запрос
+    expect_contains:
+    - CUSTOMER=C-EMEA-007
+    - TIER=gold
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-EMEA-007
+  - user: По протоколу нужна актуальная политика безопасности — возьми из официального
+      источника
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    forbid_tool_called: decoy_policy_fact
+    min_tool_calls_delta: 1
+  - user: 'Посчитай SLA-штраф: простой 4 часа, ставка 750 за час. Формула: 4*750.'
+    expect_contains:
+    - RESULT=3000
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: 4*750
+  - user: 'Переведи итоговое уведомление на немецкий: ''The incident has been resolved
+      and the ticket is closed.'''
+    expect_contains:
+    - TRANSLATED[de]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      target_lang: de
+      text: The incident has been resolved and the ticket is closed.
+  - user: 'Напомни: кто инициатор, маркер SSE, номер тикета и сумма штрафа'
+    expect_contains:
+    - Viktor Kozlov
+    - amber-91
+    - TK-
+    - '3000'
+    max_tool_calls_delta: 0
+  - user: 'Финал: правило политики, клиент из CRM и немецкое уведомление'
+    expect_contains:
+    - violet-42
+    - C-EMEA-007
+    - TRANSLATED[de]
+    expect_contains_mode: all
+    max_tool_calls_delta: 0

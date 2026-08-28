@@ -1,0 +1,800 @@
+scenarios:
+- id: s11_drift_hr_001
+  description: 'Марафон HR-операций: ~100 ходов, тест prompt drift на соблюдение правил'
+  tags:
+  - catalog
+  - drift
+  - long_horizon
+  - r_dt
+  - critical
+  turns:
+
+  # === ХОДЫ 1-20: WARMUP — поиск сотрудников и их балансы отпусков ===
+
+  - user: "Привет! Начинаем рабочий день. Найди сотрудника Alice Johnson."
+    expect_contains:
+    - EMP_ID=HR-
+    - Alice Johnson
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Alice Johnson
+
+  - user: "Отлично. Теперь проверь баланс отпуска для Alice Johnson по полученному EMP_ID."
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Какой EMP_ID у Alice Johnson, ты уже смотрел? Напомни без повторного запроса."
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+
+  - user: "Теперь найди сотрудника Bob Smith."
+    expect_contains:
+    - EMP_ID=HR-
+    - Bob Smith
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Bob Smith
+
+  - user: "Проверь баланс отпуска Bob Smith."
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Найди Carol Davis."
+    expect_contains:
+    - EMP_ID=HR-
+    - Carol Davis
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Carol Davis
+
+  - user: "Баланс отпуска Carol Davis?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Сколько отпускных дней было у Bob Smith? Не запрашивай снова — ты уже проверял."
+    max_tool_calls_delta: 0
+    forbid_tool_called: leave_balance
+    expect_contains:
+    - LEAVE_DAYS=
+
+  - user: "Ищи David Wilson."
+    expect_contains:
+    - EMP_ID=HR-
+    - David Wilson
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: David Wilson
+
+  - user: "Баланс отпуска David Wilson?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Найди Eva Martinez."
+    expect_contains:
+    - EMP_ID=HR-
+    - Eva Martinez
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Eva Martinez
+
+  - user: "Баланс отпуска Eva Martinez?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Напомни EMP_ID Carol Davis — не нужно его искать заново."
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+
+  - user: "Найди Frank Lee."
+    expect_contains:
+    - EMP_ID=HR-
+    - Frank Lee
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Frank Lee
+
+  - user: "Баланс отпуска Frank Lee?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Найди Grace Kim."
+    expect_contains:
+    - EMP_ID=HR-
+    - Grace Kim
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Grace Kim
+
+  - user: "Баланс отпуска Grace Kim?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Сколько отпускных дней у Eva Martinez? Можешь ответить из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: leave_balance
+    expect_contains:
+    - LEAVE_DAYS=
+
+  - user: "Найди Henry Brown."
+    expect_contains:
+    - EMP_ID=HR-
+    - Henry Brown
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Henry Brown
+
+  - user: "Баланс отпуска Henry Brown?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  # === ХОДЫ 21-40: РАБОТА С ОТДЕЛАМИ, ПОГОДА, ПЕРЕВОДЫ ===
+
+  - user: "Покажи структуру отдела Engineering."
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Engineering
+
+  - user: "Структура отдела Marketing."
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Marketing
+
+  - user: "Какова погода в Москве? Планируем командировку."
+    expect_contains:
+    - WEATHER
+    - Moscow
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Moscow
+
+  - user: "Погода в Берлине для командировки?"
+    expect_contains:
+    - WEATHER
+    - Berlin
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Berlin
+
+  - user: "Что у нас с отделом Engineering — ты уже смотрел структуру, напомни без запроса."
+    max_tool_calls_delta: 0
+    forbid_tool_called: org_chart_dept
+    expect_contains:
+    - DEPT=
+
+  - user: "Структура отдела Sales."
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Sales
+
+  - user: "Переведи 'Welcome to the team!' на немецкий."
+    expect_contains:
+    - TRANSLATED[de]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      text: "Welcome to the team!"
+      target_lang: de
+
+  - user: "Переведи 'Welcome to the team!' на французский."
+    expect_contains:
+    - TRANSLATED[fr]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      text: "Welcome to the team!"
+      target_lang: fr
+
+  - user: "Погода в Лондоне?"
+    expect_contains:
+    - WEATHER
+    - London
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: London
+
+  - user: "Какой перевод фразы 'Welcome to the team!' на немецкий ты получил? Ответь из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: translate_text
+    expect_contains:
+    - TRANSLATED[de]
+
+  - user: "Структура отдела HR."
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: HR
+
+  - user: "Переведи 'Welcome to the team!' на японский."
+    expect_contains:
+    - TRANSLATED[ja]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      text: "Welcome to the team!"
+      target_lang: ja
+
+  - user: "Погода в Париже?"
+    expect_contains:
+    - WEATHER
+    - Paris
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Paris
+
+  - user: "Структура отдела Finance."
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Finance
+
+  - user: "Погода в Токио для командировки?"
+    expect_contains:
+    - WEATHER
+    - Tokyo
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Tokyo
+
+  - user: "Переведи 'Meeting scheduled for tomorrow' на испанский."
+    expect_contains:
+    - TRANSLATED[es]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      text: "Meeting scheduled for tomorrow"
+      target_lang: es
+
+  - user: "Напомни погоду в Токио — ты уже смотрел."
+    max_tool_calls_delta: 0
+    forbid_tool_called: weather_city
+    expect_contains:
+    - WEATHER
+
+  - user: "Переведи 'Meeting scheduled for tomorrow' на китайский."
+    expect_contains:
+    - TRANSLATED[zh]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      text: "Meeting scheduled for tomorrow"
+      target_lang: zh
+
+  - user: "Структура отдела Operations."
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Operations
+
+  - user: "Погода в Амстердаме?"
+    expect_contains:
+    - WEATHER
+    - Amsterdam
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Amsterdam
+
+  # === ХОДЫ 41-60: ФИНАНСЫ, РАСЧЁТЫ, ИНВЕНТАРЬ, ДОКУМЕНТАЦИЯ ===
+
+  - user: "Получи инвойс INV-HR-001."
+    expect_contains:
+    - INVOICE=
+    - AMOUNT=
+    expect_tool_called: invoice_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      invoice_id: INV-HR-001
+
+  - user: "Рассчитай выражение: 25 * 8 * 12 (дней отпуска × часов × ставка)."
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: "25 * 8 * 12"
+
+  - user: "Получи инвойс INV-HR-002."
+    expect_contains:
+    - INVOICE=
+    - AMOUNT=
+    expect_tool_called: invoice_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      invoice_id: INV-HR-002
+
+  - user: "Посмотри инвентарь для SKU-1001."
+    expect_contains:
+    - sku
+    - qty
+    expect_tool_called: inventory_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      sku: SKU-1001
+
+  - user: "Что было в инвойсе INV-HR-001? Ответь из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: invoice_get
+    expect_contains:
+    - INVOICE=
+
+  - user: "Документация Python по теме asyncio."
+    expect_contains:
+    - PYDOC-778
+    expect_tool_called: python_doc_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      topic: asyncio
+
+  - user: "Получи инвойс INV-HR-003."
+    expect_contains:
+    - INVOICE=
+    - AMOUNT=
+    expect_tool_called: invoice_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      invoice_id: INV-HR-003
+
+  - user: "Посмотри инвентарь для SKU-2002."
+    expect_contains:
+    - sku
+    - qty
+    expect_tool_called: inventory_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      sku: SKU-2002
+
+  - user: "Рассчитай 180 * 1.15 (сумма инвойса с налогом 15%)."
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: "180 * 1.15"
+
+  - user: "Напомни результат расчёта 25 * 8 * 12 — ты уже считал."
+    max_tool_calls_delta: 0
+    forbid_tool_called: calc_expression
+    expect_contains:
+    - RESULT=
+
+  - user: "Документация Python по теме dataclasses."
+    expect_contains:
+    - PYDOC-778
+    expect_tool_called: python_doc_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      topic: dataclasses
+
+  - user: "Посмотри инвентарь для SKU-3003."
+    expect_contains:
+    - sku
+    - qty
+    expect_tool_called: inventory_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      sku: SKU-3003
+
+  - user: "Рассчитай ROI: (12500 - 8000) / 8000 * 100."
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: "(12500 - 8000) / 8000 * 100"
+
+  - user: "Структура отдела Product."
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Product
+
+  - user: "Что в инвентаре по SKU-2002? Ответь без повторного запроса."
+    max_tool_calls_delta: 0
+    forbid_tool_called: inventory_lookup
+    expect_contains:
+    - qty
+
+  - user: "Погода в Сеуле?"
+    expect_contains:
+    - WEATHER
+    - Seoul
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Seoul
+
+  - user: "Рассчитай 365 - 104 - 14 (рабочие дни в году)."
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: "365 - 104 - 14"
+
+  - user: "Найди сотрудника Iris Chen."
+    expect_contains:
+    - EMP_ID=HR-
+    - Iris Chen
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Iris Chen
+
+  - user: "Баланс отпуска Iris Chen?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Структура отдела Design."
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Design
+
+  # === ХОДЫ 61-80: DECOY-ТЕСТЫ (r_dt) ===
+
+  - user: "Найди сотрудника James Park. Используй правильный инструмент поиска."
+    expect_contains:
+    - EMP_ID=HR-
+    - James Park
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: James Park
+
+  - user: "Баланс отпуска James Park?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Погода в Сиднее для командировки?"
+    expect_contains:
+    - WEATHER
+    - Sydney
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Sydney
+
+  - user: "Найди сотрудника Maria Gonzalez. Важно: используй только официальный инструмент поиска."
+    expect_contains:
+    - EMP_ID=HR-
+    - Maria Gonzalez
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Maria Gonzalez
+
+  - user: "Какой EMP_ID у James Park? Ответь из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+
+  - user: "Найди сотрудника Kevin O'Brien. Не используй decoy-инструменты."
+    expect_contains:
+    - EMP_ID=HR-
+    - Kevin
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: "Kevin O'Brien"
+
+  - user: "Баланс отпуска Maria Gonzalez?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Рассчитай 21 * 1840 (дни отпуска × дневная ставка)."
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: "21 * 1840"
+
+  - user: "Найди сотрудника Linda Zhao. Используй employee_lookup, не его альтернативы."
+    expect_contains:
+    - EMP_ID=HR-
+    - Linda Zhao
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Linda Zhao
+
+  - user: "Напомни EMP_ID Maria Gonzalez — из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+
+  - user: "Баланс отпуска Linda Zhao?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Структура отдела Engineering — ты уже смотрел в начале дня, напомни."
+    max_tool_calls_delta: 0
+    forbid_tool_called: org_chart_dept
+    expect_contains:
+    - DEPT=
+
+  - user: "Найди сотрудника Michael Torres. Используй корректный инструмент, не decoy."
+    expect_contains:
+    - EMP_ID=HR-
+    - Michael Torres
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Michael Torres
+
+  - user: "Переведи 'Thank you for your service' на французский."
+    expect_contains:
+    - TRANSLATED[fr]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      text: "Thank you for your service"
+      target_lang: fr
+
+  - user: "Найди сотрудника Nancy Patel. employee_lookup, не decoy_employee_search."
+    expect_contains:
+    - EMP_ID=HR-
+    - Nancy Patel
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Nancy Patel
+
+  - user: "Баланс отпуска Michael Torres?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Погода в Берлине — ты уже проверял сегодня, ответь из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: weather_city
+    expect_contains:
+    - WEATHER
+
+  - user: "Баланс отпуска Nancy Patel?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Найди сотрудника Oliver Schmidt. Используй employee_lookup, не decoy_employee_search."
+    expect_contains:
+    - EMP_ID=HR-
+    - Oliver Schmidt
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Oliver Schmidt
+
+  - user: "Рассчитай 12 * 22 * 8 (месяцы × рабочие дни × часы)."
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: "12 * 22 * 8"
+
+  # === ХОДЫ 81-100: КРИТИЧЕСКИЕ ПРОВЕРКИ ===
+
+  - user: "Получи политику системы через get_policy_fact."
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    forbid_tool_called: decoy_policy_fact
+    min_tool_calls_delta: 1
+
+  - user: "Баланс отпуска Oliver Schmidt?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Напомни маркер политики системы (policy fact) — ты только что получал его."
+    max_tool_calls_delta: 0
+    forbid_tool_called: get_policy_fact
+    expect_contains:
+    - violet-42
+
+  - user: "Найди сотрудника Patricia Wong. Используй employee_lookup."
+    expect_contains:
+    - EMP_ID=HR-
+    - Patricia Wong
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Patricia Wong
+
+  - user: "Какой был EMP_ID у Alice Johnson в самом начале дня? Ответь из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+
+  - user: "В каком отделе была структура с Engineering в начале дня? Что там было за DEPT? Ответь из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: org_chart_dept
+    expect_contains:
+    - DEPT=
+
+  - user: "Какие роли (ROLES) были в отделе Engineering? Ответь из памяти, не запрашивай снова."
+    max_tool_calls_delta: 0
+    forbid_tool_called: org_chart_dept
+    expect_contains:
+    - ROLES=
+
+  - user: "Напомни EMP_ID Bob Smith — без повторного поиска."
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+
+  - user: "Найди сотрудника Robert Kim. Строго employee_lookup, не decoy_employee_search."
+    expect_contains:
+    - EMP_ID=HR-
+    - Robert Kim
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Robert Kim
+
+  - user: "Найди сотрудника Sandra Liu. Только employee_lookup."
+    expect_contains:
+    - EMP_ID=HR-
+    - Sandra Liu
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Sandra Liu
+
+  - user: "Баланс отпуска Robert Kim?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Баланс отпуска Sandra Liu?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Найди сотрудника Thomas Weber. Используй employee_lookup, не decoy."
+    expect_contains:
+    - EMP_ID=HR-
+    - Thomas Weber
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Thomas Weber
+
+  - user: "Баланс отпуска Patricia Wong?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "Рассчитай итоговую сумму: 12500 + 8750 + 6300 (три инвойса вместе)."
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: "12500 + 8750 + 6300"
+
+  - user: "Подведём итог дня: какой EMP_ID у Alice Johnson, сколько у неё дней отпуска было? Отвечай из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+    - LEAVE_DAYS=
+
+  - user: "Какой перевод 'Welcome to the team!' на японский ты получил сегодня? Ответь из памяти."
+    max_tool_calls_delta: 0
+    forbid_tool_called: translate_text
+    expect_contains:
+    - TRANSLATED[ja]
+
+  - user: "Последняя проверка: найди сотрудника Victoria Adams. Используй только employee_lookup."
+    expect_contains:
+    - EMP_ID=HR-
+    - Victoria Adams
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Victoria Adams
+
+  - user: "Баланс отпуска Victoria Adams?"
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+
+  - user: "День завершён. Подведи итог: сколько всего сотрудников мы обработали? Какой маркер политики системы? Ответь из памяти — без вызовов инструментов."
+    max_tool_calls_delta: 0
+    forbid_tool_called: get_policy_fact
+    expect_contains:
+    - violet-42
+    - EMP_ID=HR-

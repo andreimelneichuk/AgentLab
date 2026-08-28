@@ -1,0 +1,178 @@
+scenarios:
+- id: s01_001
+  description: DevOps проверяет живость MCP endpoint через benchmark_probe и маркер
+  tags:
+  - catalog
+  - smoke
+  turns:
+  - user: Слушай, не уверен что бэкенд вообще поднят — глянь живой ли сервис и скажи
+      какой там маркер
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+- id: s01_002
+  description: Мониторинг запрашивает healthcheck — маркер + краткий статус
+  tags:
+  - catalog
+  turns:
+  - user: Алерт кричит что сервис может лежать — чекни плз и коротко напиши статус
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+    expect_regex:
+    - (ок|работ|здоров|active|up|live)
+- id: s01_003
+  description: Пользователь считает стоимость 3 серверов по 850 $/мес через calc_expression
+  tags:
+  - catalog
+  turns:
+  - user: 'Хочу прикинуть расходы на инфру: три сервера по 850 баксов в месяц. Сколько
+      в месяц выйдет?'
+    expect_contains:
+    - '2550'
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: 3*850
+- id: s01_004
+  description: Финансист рассчитывает ROI инвестиций через calc_expression с проверкой
+    аргументов
+  tags:
+  - catalog
+  - critical
+  turns:
+  - user: 'Нужен ROI по проекту: вложили 45 000, выручка 120 000. Формула (доход
+      − затраты) / затраты × 100. Посчитай % возврата'
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: (120000-45000)/45000*100
+- id: s01_005
+  description: Поиск несуществующих данных ghost_data_xyz — честный отрицательный
+    ответ
+  tags:
+  - catalog
+  - smoke
+  - negative
+  turns:
+  - user: Поищи в каталоге ghost_data_xyz — вроде там что-то должно быть
+    expect_tool_called: empty_search
+    min_tool_calls_delta: 1
+    forbid_contains:
+    - orchid-17
+    expect_regex:
+    - (ничего|не найд|пуст|отсутств|нет результ|no result|empty)
+- id: s01_006
+  description: 'Поиск устаревшего артефакта legacy_v0_archive — 2 хода: поиск и вывод'
+  tags:
+  - catalog
+  - negative
+  turns:
+  - user: Нам нужен артефакт legacy_v0_archive из старого архива — поищи в хранилище
+    expect_tool_called: empty_search
+    min_tool_calls_delta: 1
+  - user: Ок, а что поиск-то вернул?
+    expect_regex:
+    - (пуст|не найд|ничего|нет|empty|zero|0 result)
+    max_tool_calls_delta: 0
+- id: s01_007
+  description: flaky_tool с query=monitoring_check — агент делает ретрай и получает
+    успех
+  tags:
+  - catalog
+  - smoke
+  - critical
+  turns:
+  - user: Запусти проверку мониторинга — она иногда с первого раза падает, если что
+      попробуй ещё раз
+    expect_contains:
+    - flaky_ok
+    expect_tool_called: flaky_tool
+    min_tool_calls_delta: 2
+- id: s01_008
+  description: 'flaky_tool с query=deploy_probe — 2 хода: ретрай + финальный вывод'
+  tags:
+  - catalog
+  turns:
+  - user: Надо прогнать деплой-пробу — бывает что с первого раза не заводится, если
+      упадёт повтори и скажи чем закончилось
+    expect_contains:
+    - flaky_ok
+    expect_tool_called: flaky_tool
+    min_tool_calls_delta: 2
+  - user: Круто, продублируй итог пробы одной строкой
+    expect_contains:
+    - flaky_ok
+    max_tool_calls_delta: 0
+- id: s01_009
+  description: random_marker_probe — получить маркер, через 2 хода вспомнить без повторного
+    вызова
+  tags:
+  - catalog
+  turns:
+  - user: Сгенери случайный контрольный маркер — потом ещё спрошу
+    expect_contains:
+    - RANDOM_MARKER=
+    expect_tool_called: random_marker_probe
+    min_tool_calls_delta: 1
+  - user: А что мы там получили?
+    expect_contains:
+    - RANDOM_MARKER
+    max_tool_calls_delta: 0
+  - user: Напомни маркер с самого начала
+    expect_contains:
+    - RANDOM_MARKER=
+    max_tool_calls_delta: 0
+    forbid_tool_called: random_marker_probe
+- id: s01_010
+  description: Пользователь просит контрольный маркер для логирования — benchmark_probe
+    с ответом
+  tags:
+  - catalog
+  turns:
+  - user: Для аудит-лога нужен контрольный id сессии — вытащишь?
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+- id: s01_011
+  description: 'Два последовательных вычисления: 15×12, затем 180+50 в одном диалоге'
+  tags:
+  - catalog
+  turns:
+  - user: Посчитай сколько часов в году если 15 рабочих дней в месяц и 12 месяцев
+    expect_contains:
+    - '180'
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: 15*12
+  - user: Теперь добавь к этому ещё 50 часов
+    expect_contains:
+    - '230'
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: 180+50
+- id: s01_012
+  description: empty_search(budget_2025) → честный ответ → calc_expression для ввода
+    бюджета вручную
+  tags:
+  - catalog
+  turns:
+  - user: Есть в базе цифры бюджета за 2025? Нужно для отчёта
+    expect_tool_called: empty_search
+    min_tool_calls_delta: 1
+    expect_regex:
+    - (не найд|пуст|нет данн|отсутств|empty|no result)
+  - user: 'Ясно, тогда посчитай сам: квартальный бюджет 375 000, всего 4 квартала'
+    expect_contains:
+    - '1500000'
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: 375000*4

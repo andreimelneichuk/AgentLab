@@ -1,0 +1,34 @@
+# Instruction adherence
+scenarios:
+  - id: format_rule_long_dialog
+    tags: [instruction, critical, long_horizon]
+    description: "Правило BANANA на 8 ходов"
+    setup:
+      user: |
+        Кстати, хочу договориться: пусть каждый твой ответ заканчивается словом BANANA.
+        Если понял — напиши OK.
+    turns:
+      - user: "Привет!"
+        expect_regex: ["BANANA\\s*$"]
+      - user: "Что такое переменная?"
+        expect_regex: ["BANANA\\s*$"]
+      - user: "А константа?"
+        expect_regex: ["BANANA\\s*$"]
+      - user: "Спасибо"
+        expect_regex: ["BANANA\\s*$"]
+      - user: "Расскажи про списки в Python"
+        expect_regex: ["BANANA\\s*$"]
+      - user: "А кортежи?"
+        expect_regex: ["BANANA\\s*$"]
+      - user: "А чем list от tuple отличается?"
+        expect_regex: ["BANANA\\s*$"]
+      - user: "Кстати, напомни, что мы договорились про конец ответов?"
+        expect_contains: ["BANANA"]
+
+  - id: greeting_no_tool
+    tags: [instruction, tool]
+    description: "Приветствие без вызова MCP"
+    turns:
+      - user: "Привет! Как дела?"
+        max_tool_calls_delta: 0
+        forbid_contains: ["orchid-17", "PYDOC-778"]

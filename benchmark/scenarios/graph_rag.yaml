@@ -1,0 +1,29 @@
+scenarios:
+
+  - id: graph_001
+    description: "Сколько сотрудников Engineering с активной политикой Remote Work"
+    tags: [graph_rag, smoke]
+    turns:
+      - user: "Подскажи, сколько в Engineering людей под активной политикой Remote Work?"
+        expect_contains: ["1"]
+        expect_tool_called: graph_query
+        min_tool_calls_delta: 1
+
+  - id: graph_002
+    description: "Подсчёт сотрудников в несуществующем отделе — пустой граф"
+    tags: [graph_rag, r_nta]
+    config_override:
+      mcp_servers: {}
+    turns:
+      - user: "А в Legal кто-нибудь на Remote Work сидит? Сколько их?"
+        expect_contains: ["нет", "не могу", "пуст", "0", "отсутств"]
+        forbid_tool_called: decoy_policy_fact
+
+  - id: graph_003
+    description: "Список сотрудников HR без выдуманных имён"
+    tags: [graph_rag]
+    turns:
+      - user: "Кто у нас в HR работает? Можешь перечислить поимённо?"
+        expect_contains: ["Carol"]
+        expect_tool_called: graph_query
+        min_tool_calls_delta: 1

@@ -1,0 +1,279 @@
+# Creative batch B — длинные диалоги, правила формата, квиз без tool
+scenarios:
+  - id: creative_b_001
+    tags: [catalog, creative, long_horizon, instruction, tool]
+    description: "COCONUT + цепочка inventory → invoice → calc + финальный квиз"
+    setup:
+      user: |
+        Хочу на всю беседу одну привычку: завершай каждый ответ словом COCONUT.
+        Если ок — напиши просто OK.
+    turns:
+      - user: "Сколько SKU-1001 на складе? Нужны актуальные остатки, не из устаревшего каталога."
+        expect_contains: ["WH-01"]
+        expect_tool_called: inventory_lookup
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_inventory_lookup
+        expect_tool_args:
+          sku: SKU-1001
+        expect_regex: ["COCONUT\\s*$"]
+      - user: "Кстати, а что вообще такое SKU?"
+        expect_regex: ["COCONUT\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Подтяни счёт INV-2024-99."
+        expect_contains: ["INVOICE=INV-2024-99", "12500"]
+        expect_tool_called: invoice_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          invoice_id: INV-2024-99
+        expect_regex: ["COCONUT\\s*$"]
+      - user: "Ок, идём дальше."
+        expect_regex: ["COCONUT\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Посчитай 10+5."
+        expect_contains: ["RESULT=15"]
+        expect_tool_called: calc_expression
+        min_tool_calls_delta: 1
+        expect_regex: ["COCONUT\\s*$"]
+      - user: "Мини-итог: какой склад, сумма счёта и результат калькулятора?"
+        expect_contains: ["WH-01", "12500", "15"]
+        expect_contains_mode: any
+        max_tool_calls_delta: 0
+        forbid_tool_called: inventory_lookup
+
+  - id: creative_b_002
+    tags: [catalog, creative, long_horizon, instruction, tool, r_dt]
+    description: "GRAPE + sales_quote и customer_get + квиз по CRM"
+    setup:
+      user: |
+        Правило на всю беседу: каждый ответ заканчивается словом GRAPE.
+        Ответь OK.
+    turns:
+      - user: "Сделай коммерческое предложение на Enterprise Suite."
+        expect_contains: ["QUOTE", "Enterprise Suite"]
+        expect_tool_called: sales_quote
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          product: Enterprise Suite
+        expect_regex: ["GRAPE\\s*$"]
+      - user: "Теперь карточка клиента CUST-771 — только актуальный CRM, не старый справочник."
+        expect_contains: ["CUSTOMER=CUST-771", "gold"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_customer_lookup
+        expect_tool_args:
+          customer_id: CUST-771
+        expect_regex: ["GRAPE\\s*$"]
+      - user: "Коротко — что такое CRM?"
+        expect_regex: ["GRAPE\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Какой регион у клиента из карточки?"
+        expect_contains: ["EMEA"]
+        expect_regex: ["GRAPE\\s*$"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: customer_get
+      - user: "Финал: продукт в КП, tier клиента и наше правило формата ответов."
+        expect_contains: ["Enterprise Suite", "gold", "GRAPE"]
+        max_tool_calls_delta: 0
+
+  - id: creative_b_003
+    tags: [catalog, creative, long_horizon, instruction, tool]
+    description: "PEPPER + sse_audit_log и benchmark_sse_probe + квиз SSE"
+    setup:
+      user: |
+        Запомни: в каждом ответе последнее слово — PEPPER.
+        Подтверди OK.
+    turns:
+      - user: "Покажи аудит-лог за 2024-06-01."
+        expect_contains: ["AUDIT", "2024-06-01"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          date: "2024-06-01"
+        expect_regex: ["PEPPER\\s*$"]
+      - user: "Сделай пробный SSE-запрос и назови маркер из ответа."
+        expect_contains: ["amber-91", "BENCH_MARKER_SSE"]
+        expect_tool_called: benchmark_sse_probe
+        min_tool_calls_delta: 1
+        expect_regex: ["PEPPER\\s*$"]
+      - user: "А что такое SSE-транспорт?"
+        expect_regex: ["PEPPER\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Сколько events было в том аудит-логе?"
+        expect_contains: ["events=3"]
+        expect_regex: ["PEPPER\\s*$"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: sse_audit_log
+      - user: "Напомни SSE-маркер из probe и дату аудита."
+        expect_contains: ["amber-91", "2024-06-01"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: benchmark_sse_probe
+
+  - id: creative_b_004
+    tags: [catalog, creative, long_horizon, instruction, tool, r_dt]
+    description: "LIME + HR цепочка employee → leave + квиз"
+    setup:
+      user: |
+        На всю беседу: последнее слово каждого ответа — LIME.
+        Подтверди OK.
+    turns:
+      - user: "Найди Maria Sidorova в HR — актуальный каталог, не устаревший поиск."
+        expect_contains: ["EMP_ID", "Maria Sidorova"]
+        expect_tool_called: employee_lookup
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_employee_search
+        expect_tool_args:
+          name: Maria Sidorova
+        expect_regex: ["LIME\\s*$"]
+      - user: "Сколько дней отпуска у emp_id HR-A1B2C3?"
+        expect_contains: ["LEAVE_DAYS"]
+        expect_tool_called: leave_balance
+        min_tool_calls_delta: 1
+        expect_regex: ["LIME\\s*$"]
+      - user: "Покажи структуру отдела Engineering."
+        expect_contains: ["DEPT=Engineering"]
+        expect_tool_called: org_chart_dept
+        min_tool_calls_delta: 1
+        expect_regex: ["LIME\\s*$"]
+      - user: "Коротко про отпускные дни."
+        expect_regex: ["LIME\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Итого: имя сотрудника, отдел из оргструктуры и правило LIME."
+        expect_contains: ["Maria Sidorova", "Engineering", "LIME"]
+        max_tool_calls_delta: 0
+
+  - id: creative_b_005
+    tags: [catalog, creative, long_horizon, instruction, tool, r_dt]
+    description: "MAPLE + политика и python_doc + квиз по core-фактам"
+    setup:
+      user: |
+        Договоримся так: в конце каждого твоего сообщения ставь слово MAPLE.
+        Напиши OK, если принял.
+    turns:
+      - user: "Узнай секрет политики безопасности — из официального источника, не из старого архива."
+        expect_contains: ["violet-42"]
+        expect_tool_called: get_policy_fact
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_policy_fact
+        expect_regex: ["MAPLE\\s*$"]
+      - user: "Найди в Python-доке раздел про async — нормальная документация, не быстрый кривой поиск."
+        expect_contains: ["PYDOC-778"]
+        expect_tool_called: python_doc_lookup
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_python_lookup
+        expect_tool_args:
+          topic: async
+        expect_regex: ["MAPLE\\s*$"]
+      - user: "Что такое декоратор в Python?"
+        expect_regex: ["MAPLE\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Какой REF был в доке по async?"
+        expect_contains: ["PYDOC-778"]
+        expect_regex: ["MAPLE\\s*$"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: python_doc_lookup
+      - user: "Собери: секрет политики, REF-код и слово-метка формата."
+        expect_contains: ["violet-42", "PYDOC-778", "MAPLE"]
+        max_tool_calls_delta: 0
+
+  - id: creative_b_006
+    tags: [catalog, creative, long_horizon, instruction, tool, r_dt]
+    description: "BERRY + складской конвейер с decoy + квиз по цепочке"
+    setup:
+      user: |
+        Запомни: в каждом ответе последнее слово — BERRY.
+        Подтверди OK.
+    turns:
+      - user: "Сколько SKU-A100 на складе? Актуальные остатки, не устаревший каталог."
+        expect_contains: ["WH-01"]
+        expect_tool_called: inventory_lookup
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_inventory_lookup
+        expect_regex: ["BERRY\\s*$"]
+      - user: "Подтяни счёт INV-500."
+        expect_contains: ["INVOICE=INV-500"]
+        expect_tool_called: invoice_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          invoice_id: INV-500
+        expect_regex: ["BERRY\\s*$"]
+      - user: "Посчитай (2+3)*4."
+        expect_contains: ["RESULT=20"]
+        expect_tool_called: calc_expression
+        min_tool_calls_delta: 1
+        expect_regex: ["BERRY\\s*$"]
+      - user: "Просто ок, продолжаем."
+        expect_regex: ["BERRY\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Напомни: что делали в складской цепочке и какой итог у калькулятора?"
+        expect_contains: ["inventory", "invoice", "calc", "20"]
+        expect_contains_mode: any
+        max_tool_calls_delta: 0
+
+  - id: creative_b_007
+    tags: [catalog, creative, long_horizon, instruction, tool]
+    description: "OCEAN + CRM тикет и КП + recall + квиз"
+    setup:
+      user: |
+        На всю беседу последнее слово ответа — OCEAN.
+        Подтверди OK.
+    turns:
+      - user: "Сделай КП на Basic Plan."
+        expect_contains: ["QUOTE", "Basic Plan"]
+        expect_tool_called: sales_quote
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          product: Basic Plan
+        expect_regex: ["OCEAN\\s*$"]
+      - user: "Создай тикет: VPN не работает."
+        expect_contains: ["TICKET_ID", "VPN"]
+        expect_tool_called: ticket_create
+        min_tool_calls_delta: 1
+        expect_regex: ["OCEAN\\s*$"]
+      - user: "Открой карточку клиента CUST-200."
+        expect_contains: ["CUSTOMER=CUST-200"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_customer_lookup
+        expect_regex: ["OCEAN\\s*$"]
+      - user: "Какой продукт был в КП?"
+        expect_contains: ["Basic Plan"]
+        expect_regex: ["OCEAN\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Финал: тема тикета, продукт в КП и правило OCEAN."
+        expect_contains: ["VPN", "Basic Plan", "OCEAN"]
+        max_tool_calls_delta: 0
+
+  - id: creative_b_008
+    tags: [catalog, creative, long_horizon, instruction, tool]
+    description: "CHERRY + смешанный SSE/CRM/core + мега-квиз"
+    setup:
+      user: |
+        Правило беседы: каждый ответ заканчивается словом CHERRY.
+        Ответь OK.
+    turns:
+      - user: "Сделай пробный запрос к основному endpoint и назови маркер."
+        expect_contains: ["orchid-17"]
+        expect_tool_called: benchmark_probe
+        min_tool_calls_delta: 1
+        expect_regex: ["CHERRY\\s*$"]
+      - user: "Покажи аудит-лог за 2024-06-15."
+        expect_contains: ["AUDIT", "2024-06-15"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+        expect_regex: ["CHERRY\\s*$"]
+      - user: "Открой карточку клиента CUST-42."
+        expect_contains: ["CUSTOMER=CUST-42"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        expect_regex: ["CHERRY\\s*$"]
+      - user: "Какая погода в Берлине?"
+        expect_contains: ["WEATHER", "Berlin"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_regex: ["CHERRY\\s*$"]
+      - user: "Пауза, просто ответь ок."
+        expect_regex: ["CHERRY\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Сводка: маркер probe, дата аудита, id клиента и слово-метка формата."
+        expect_contains: ["orchid-17", "2024-06-15", "CUST-42", "CHERRY"]
+        max_tool_calls_delta: 0

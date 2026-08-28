@@ -1,0 +1,476 @@
+scenarios:
+- id: s14_drift_recall_001
+  description: >
+    Recall Marathon (50 turns): 10 anchor facts are established in turns 1-11,
+    followed by 27 turns of deliberate "noise" operations using entirely different
+    entities, then 11 turns of strict recall tests that forbid re-calling the
+    original tools. Tests whether the agent retains verbatim values (EMP_IDs,
+    markers, prices, counts) across a long context window without refreshing them.
+  tags:
+    - catalog
+    - drift
+    - long_horizon
+    - r_nta
+    - critical
+
+  turns:
+
+    # ── PHASE 1: Anchor establishment (turns 1-12) ──────────────────────────
+
+    - user: "Найди сотрудника Alice Johnson"
+      expect_contains:
+        - EMP_ID=HR-
+        - Alice Johnson
+      expect_tool_called: employee_lookup
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        name: Alice Johnson
+
+    - user: "Получи текущий факт политики безопасности через get_policy_fact"
+      expect_contains:
+        - POLICY_FACT=violet-42
+      expect_tool_called: get_policy_fact
+      min_tool_calls_delta: 1
+
+    - user: "Запусти benchmark_probe и скажи мне маркер streamable MCP"
+      expect_contains:
+        - BENCH_MARKER_STREAMABLE=orchid-17
+      expect_tool_called: benchmark_probe
+      min_tool_calls_delta: 1
+
+    - user: "Теперь запусти benchmark_sse_probe и скажи маркер SSE"
+      expect_contains:
+        - BENCH_MARKER_SSE=amber-91
+      expect_tool_called: benchmark_sse_probe
+      min_tool_calls_delta: 1
+
+    - user: "Получи данные клиента C-GOLD-001"
+      expect_contains:
+        - CUSTOMER=C-GOLD-001
+        - TIER=gold
+        - REGION=EMEA
+      expect_tool_called: customer_get
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        customer_id: C-GOLD-001
+
+    - user: "Посмотри аудит-лог SSE за дату 2024-01-01"
+      expect_contains:
+        - AUDIT
+        - "2024-01-01"
+        - events=3
+      expect_tool_called: sse_audit_log
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        date: "2024-01-01"
+
+    - user: "Покажи орг-схему отдела Engineering"
+      expect_contains:
+        - DEPT=Engineering
+        - ROLES=lead,senior,mid,junior
+      expect_tool_called: org_chart_dept
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        department: Engineering
+
+    - user: "Запроси коммерческое предложение на продукт FoundationPlan"
+      expect_contains:
+        - QUOTE
+        - FoundationPlan
+        - price_usd=
+      expect_tool_called: sales_quote
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        product: FoundationPlan
+
+    - user: "Получи инвойс INV-ANCHOR-001"
+      expect_contains:
+        - INVOICE=INV-ANCHOR-001
+        - AMOUNT=12500.00
+        - STATUS=PAID
+      expect_tool_called: invoice_get
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        invoice_id: INV-ANCHOR-001
+
+    - user: "Вычисли выражение 100 * 42"
+      expect_contains:
+        - RESULT=4200
+      expect_tool_called: calc_expression
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        expression: 100 * 42
+
+    - user: "Узнай погоду в Amsterdam"
+      expect_contains:
+        - WEATHER
+        - city=Amsterdam
+        - temp_c=
+      expect_tool_called: weather_city
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        city: Amsterdam
+
+    - user: >
+        Перечисли всё, что мы только что установили в этом разговоре:
+        EMP_ID Alice Johnson, факт политики, маркер streamable, маркер SSE,
+        тир и регион C-GOLD-001, количество событий за 2024-01-01,
+        роли в Engineering, цену FoundationPlan, сумму INV-ANCHOR-001 и результат 100*42.
+        Не вызывай инструменты — только из памяти.
+      max_tool_calls_delta: 0
+      expect_contains:
+        - violet-42
+        - orchid-17
+        - amber-91
+
+    # ── PHASE 2: Noise (turns 13-39) ────────────────────────────────────────
+
+    # Turns 13-20: HR operations with different employees
+
+    - user: "Найди сотрудника Bob Smith"
+      expect_contains:
+        - EMP_ID=HR-
+        - Bob Smith
+      expect_tool_called: employee_lookup
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        name: Bob Smith
+
+    - user: "Покажи баланс отпусков для сотрудника, которого мы только что нашли (Bob Smith)"
+      expect_contains:
+        - LEAVE_DAYS=
+      expect_tool_called: leave_balance
+      min_tool_calls_delta: 1
+
+    - user: "Найди сотрудника Carol Davis"
+      expect_contains:
+        - EMP_ID=HR-
+        - Carol Davis
+      expect_tool_called: employee_lookup
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        name: Carol Davis
+
+    - user: "Покажи баланс отпусков Carol Davis"
+      expect_contains:
+        - LEAVE_DAYS=
+      expect_tool_called: leave_balance
+      min_tool_calls_delta: 1
+
+    - user: "Найди сотрудника David Wilson"
+      expect_contains:
+        - EMP_ID=HR-
+        - David Wilson
+      expect_tool_called: employee_lookup
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        name: David Wilson
+
+    - user: "Найди сотрудника Eva Martinez"
+      expect_contains:
+        - EMP_ID=HR-
+        - Eva Martinez
+      expect_tool_called: employee_lookup
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        name: Eva Martinez
+
+    - user: "Покажи баланс отпусков Eva Martinez"
+      expect_contains:
+        - LEAVE_DAYS=
+      expect_tool_called: leave_balance
+      min_tool_calls_delta: 1
+
+    - user: >
+        Не вызывая инструменты, перечисли сотрудников которых мы искали
+        с шага 13 по сей момент (Bob Smith, Carol Davis, David Wilson, Eva Martinez)
+        и их EMP_ID из этих же шагов.
+      max_tool_calls_delta: 0
+      expect_contains:
+        - Bob Smith
+        - Carol Davis
+
+    # Turns 21-28: CRM operations with different customers
+
+    - user: "Получи данные клиента C-NOISE-010"
+      expect_contains:
+        - CUSTOMER=C-NOISE-010
+      expect_tool_called: customer_get
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        customer_id: C-NOISE-010
+
+    - user: "Получи данные клиента C-NOISE-011"
+      expect_contains:
+        - CUSTOMER=C-NOISE-011
+      expect_tool_called: customer_get
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        customer_id: C-NOISE-011
+
+    - user: "Создай тикет 'Support request #1'"
+      expect_contains:
+        - TICKET_ID=TK-
+        - Support request #1
+      expect_tool_called: ticket_create
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        subject: "Support request #1"
+
+    - user: "Создай тикет 'Support request #2'"
+      expect_contains:
+        - TICKET_ID=TK-
+        - Support request #2
+      expect_tool_called: ticket_create
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        subject: "Support request #2"
+
+    - user: "Запроси коммерческое предложение на NoisePlan"
+      expect_contains:
+        - QUOTE
+        - NoisePlan
+        - price_usd=
+      expect_tool_called: sales_quote
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        product: NoisePlan
+
+    - user: "Запроси коммерческое предложение на TestProduct"
+      expect_contains:
+        - QUOTE
+        - TestProduct
+        - price_usd=
+      expect_tool_called: sales_quote
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        product: TestProduct
+
+    - user: >
+        Без инструментов: какие клиенты C-NOISE-010 и C-NOISE-011 —
+        их тиры и регионы из шагов 21-22? И какие тикеты мы только что создали?
+      max_tool_calls_delta: 0
+      expect_contains:
+        - C-NOISE-010
+        - C-NOISE-011
+
+    - user: "Ещё раз создай тикет 'Support request #3' для полноты"
+      expect_contains:
+        - TICKET_ID=TK-
+        - Support request #3
+      expect_tool_called: ticket_create
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        subject: "Support request #3"
+
+    # Turns 29-34: SSE + CORE with different dates/SKUs
+
+    - user: "Посмотри аудит-лог SSE за 2024-11-15"
+      expect_contains:
+        - AUDIT
+        - "2024-11-15"
+      expect_tool_called: sse_audit_log
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        date: "2024-11-15"
+
+    - user: "Посмотри аудит-лог SSE за 2024-12-20"
+      expect_contains:
+        - AUDIT
+        - "2024-12-20"
+      expect_tool_called: sse_audit_log
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        date: "2024-12-20"
+
+    - user: "Проверь инвентарь для артикула SKU-NOISE-500"
+      expect_contains:
+        - SKU-NOISE-500
+      expect_tool_called: inventory_lookup
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        sku: SKU-NOISE-500
+
+    - user: "Проверь инвентарь для артикула SKU-NOISE-501"
+      expect_contains:
+        - SKU-NOISE-501
+      expect_tool_called: inventory_lookup
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        sku: SKU-NOISE-501
+
+    - user: "Найди документацию Python по теме threading"
+      expect_contains:
+        - Python
+        - threading
+      expect_tool_called: python_doc_lookup
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        topic: threading
+
+    - user: "Найди документацию Python по теме contextlib"
+      expect_contains:
+        - Python
+        - contextlib
+      expect_tool_called: python_doc_lookup
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        topic: contextlib
+
+    # Turns 35-39: Mixed noise + recall of noise data
+
+    - user: "Узнай погоду в Tokyo"
+      expect_contains:
+        - WEATHER
+        - city=Tokyo
+        - temp_c=
+      expect_tool_called: weather_city
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        city: Tokyo
+
+    - user: "Узнай погоду в Sydney"
+      expect_contains:
+        - WEATHER
+        - city=Sydney
+        - temp_c=
+      expect_tool_called: weather_city
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        city: Sydney
+
+    - user: "Переведи текст 'Hello' на немецкий язык"
+      expect_contains:
+        - TRANSLATED[de]=
+      expect_tool_called: translate_text
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        text: Hello
+        target_lang: de
+
+    - user: "Переведи текст 'Hello' на французский язык"
+      expect_contains:
+        - TRANSLATED[fr]=
+      expect_tool_called: translate_text
+      min_tool_calls_delta: 1
+      expect_tool_args:
+        text: Hello
+        target_lang: fr
+
+    - user: >
+        Без инструментов: перечисли шумовые данные из шагов 29-38 —
+        аудит-логи за ноябрь и декабрь 2024, погоду в Tokyo и Sydney,
+        переводы слова Hello.
+      max_tool_calls_delta: 0
+      expect_contains:
+        - Tokyo
+        - Sydney
+
+    # ── PHASE 3: Critical anchor recall (turns 40-50) ───────────────────────
+
+    - user: >
+        Напомни EMP_ID Alice Johnson — мы её искали в самом начале разговора,
+        на первом шаге. Не вызывай employee_lookup снова.
+      max_tool_calls_delta: 0
+      forbid_tool_called: employee_lookup
+      expect_contains:
+        - EMP_ID=HR-
+        - Alice Johnson
+
+    - user: >
+        Какое правило политики безопасности мы получили в начале? Это был шаг 2,
+        функция get_policy_fact. Не вызывай инструмент.
+      max_tool_calls_delta: 0
+      forbid_tool_called: get_policy_fact
+      expect_contains:
+        - violet-42
+
+    - user: >
+        Назови маркер streamable MCP endpoint из самого начала сессии —
+        шаг 3, benchmark_probe. Не вызывай инструмент.
+      max_tool_calls_delta: 0
+      forbid_tool_called: benchmark_probe
+      expect_contains:
+        - orchid-17
+
+    - user: >
+        А маркер SSE endpoint — шаг 4, benchmark_sse_probe.
+        Назови его из памяти, без вызова инструмента.
+      max_tool_calls_delta: 0
+      forbid_tool_called: benchmark_sse_probe
+      expect_contains:
+        - amber-91
+
+    - user: >
+        Клиент C-GOLD-001 — какой у него тир и регион?
+        Мы смотрели это в начале разговора, шаг 5. Не вызывай customer_get.
+      max_tool_calls_delta: 0
+      forbid_tool_called: customer_get
+      expect_contains:
+        - TIER=gold
+        - REGION=EMEA
+
+    - user: >
+        Сколько событий было в аудит-логе за 2024-01-01?
+        Это был шаг 6 в самом начале. Не вызывай sse_audit_log.
+      max_tool_calls_delta: 0
+      forbid_tool_called: sse_audit_log
+      expect_contains:
+        - events=3
+        - "2024-01-01"
+
+    - user: >
+        Какой состав отдела Engineering — мы смотрели орг-схему в начале,
+        шаг 7. Перечисли роли из памяти, без org_chart_dept.
+      max_tool_calls_delta: 0
+      forbid_tool_called: org_chart_dept
+      expect_contains:
+        - Engineering
+        - ROLES=
+
+    - user: >
+        Цена FoundationPlan — мы запрашивали коммерческое предложение в шаге 8.
+        Скажи price_usd из памяти, без sales_quote.
+      max_tool_calls_delta: 0
+      forbid_tool_called: sales_quote
+      expect_contains:
+        - FoundationPlan
+        - price_usd=
+
+    - user: >
+        Сумма инвойса INV-ANCHOR-001 — помнишь из начала разговора, шаг 9?
+        Не вызывай invoice_get.
+      max_tool_calls_delta: 0
+      forbid_tool_called: invoice_get
+      expect_contains:
+        - INV-ANCHOR-001
+        - AMOUNT=
+
+    - user: >
+        Результат расчёта 100 * 42 из начала беседы, шаг 10?
+        Не вызывай calc_expression.
+      max_tool_calls_delta: 0
+      forbid_tool_called: calc_expression
+      expect_contains:
+        - "4200"
+
+    - user: >
+        Итоговый recall — перечисли все 10 якорей из первой фазы разговора:
+        1) EMP_ID Alice Johnson,
+        2) факт политики (violet-42),
+        3) маркер streamable (orchid-17),
+        4) маркер SSE (amber-91),
+        5) тир и регион клиента C-GOLD-001,
+        6) количество SSE-событий за 2024-01-01,
+        7) роли в отделе Engineering,
+        8) цена FoundationPlan,
+        9) сумма инвойса INV-ANCHOR-001,
+        10) результат вычисления 100 * 42.
+        Только из памяти — никаких инструментов.
+      max_tool_calls_delta: 0
+      expect_contains:
+        - violet-42
+        - orchid-17
+        - amber-91
+        - EMP_ID=HR-
+      expect_contains_mode: all

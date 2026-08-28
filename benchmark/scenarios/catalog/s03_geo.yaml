@@ -1,0 +1,185 @@
+scenarios:
+
+  # ── s03_001 ─────────────────────────────────────────────────────────────────
+  # Менеджер планирует командировку в London
+  - id: s03_001
+    tags: [catalog, weather, smoke]
+    turns:
+      - user: "Лечу в Лондон на след неделе — какая там погода, чтобы понять что брать?"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "London"}
+
+  # ── s03_002 ─────────────────────────────────────────────────────────────────
+  # Погода в Tokyo для мероприятия
+  - id: s03_002
+    tags: [catalog, weather]
+    turns:
+      - user: "Тимбилдинг в Токио — какая там погода? Решаем, на улице делать или нет"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Tokyo"}
+
+  # ── s03_003 ─────────────────────────────────────────────────────────────────
+  # 3 хода: погода Berlin → погода Sydney → сравнить (recall)
+  - id: s03_003
+    tags: [catalog, weather, multi-turn]
+    turns:
+      - user: "Какая погода в Берлине сейчас?"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Berlin"}
+      - user: "А в Сиднее?"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Sydney"}
+      - user: "Где сейчас теплее — в Берлине или Сиднее?"
+        expect_contains: ["WEATHER"]
+        max_tool_calls_delta: 0
+
+  # ── s03_004 ─────────────────────────────────────────────────────────────────
+  # Логист: погода в Dubai для доставки
+  - id: s03_004
+    tags: [catalog, weather]
+    turns:
+      - user: "Груз идёт через Дубай — какая там погода на складе?"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Dubai"}
+
+  # ── s03_005 ─────────────────────────────────────────────────────────────────
+  # Погода в 3 городах: Paris → Seoul → Cairo, каждый отдельным ходом
+  - id: s03_005
+    tags: [catalog, weather, multi-turn]
+    turns:
+      - user: "Какая погода в Париже? Европейский офис готовится к открытию"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Paris"}
+      - user: "Теперь Сеул — там азиатское подразделение"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Seoul"}
+      - user: "И Каир — там партнёры"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Cairo"}
+
+  # ── s03_006 ─────────────────────────────────────────────────────────────────
+  # Перевод презентации на немецкий
+  - id: s03_006
+    tags: [catalog, translate, smoke]
+    turns:
+      - user: "Переведи на немецкий из квартальной презентации: \"Quarterly results exceeded expectations\"."
+        expect_contains: ["TRANSLATED"]
+        expect_tool_called: translate_text
+        min_tool_calls_delta: 1
+        expect_tool_args: {target_lang: "de", text: "Quarterly results exceeded expectations"}
+
+  # ── s03_007 ─────────────────────────────────────────────────────────────────
+  # Перевод пункта контракта на французский
+  - id: s03_007
+    tags: [catalog, translate]
+    turns:
+      - user: "Для контракта с французами переведи пункт: \"The parties agree to resolve disputes through arbitration.\" На французский"
+        expect_contains: ["TRANSLATED"]
+        expect_tool_called: translate_text
+        min_tool_calls_delta: 1
+        expect_tool_args: {target_lang: "fr", text: "The parties agree to resolve disputes through arbitration."}
+
+  # ── s03_008 ─────────────────────────────────────────────────────────────────
+  # 3 хода: перевести greeting на ja → goodbye на ja → recall обоих без tool
+  - id: s03_008
+    tags: [catalog, translate, multi-turn]
+    turns:
+      - user: "Переведи на японский: \"Welcome to our company!\""
+        expect_contains: ["TRANSLATED"]
+        expect_tool_called: translate_text
+        min_tool_calls_delta: 1
+        expect_tool_args: {target_lang: "ja", text: "Welcome to our company!"}
+      - user: "Теперь на японский: \"Goodbye and thank you for your visit.\""
+        expect_contains: ["TRANSLATED"]
+        expect_tool_called: translate_text
+        min_tool_calls_delta: 1
+        expect_tool_args: {target_lang: "ja", text: "Goodbye and thank you for your visit."}
+      - user: "Напомни оба японских перевода что мы делали"
+        expect_contains: ["TRANSLATED"]
+        max_tool_calls_delta: 0
+
+  # ── s03_009 ─────────────────────────────────────────────────────────────────
+  # Глобализация: перевод product description → es, затем → pt
+  - id: s03_009
+    tags: [catalog, translate, multi-turn]
+    turns:
+      - user: "Для латиноамериканского рынка на испанский: \"Our product combines durability with innovative design.\""
+        expect_contains: ["TRANSLATED"]
+        expect_tool_called: translate_text
+        min_tool_calls_delta: 1
+        expect_tool_args: {target_lang: "es", text: "Our product combines durability with innovative design."}
+      - user: "Ок, ту же фразу на португальский — для Бразилии"
+        expect_contains: ["TRANSLATED"]
+        expect_tool_called: translate_text
+        min_tool_calls_delta: 1
+        expect_tool_args: {target_lang: "pt", text: "Our product combines durability with innovative design."}
+
+  # ── s03_010 ─────────────────────────────────────────────────────────────────
+  # HR: погода в Amsterdam + перевод welcome-письма на нидерландский
+  - id: s03_010
+    tags: [catalog, weather, translate, multi-turn]
+    turns:
+      - user: "Открываем офис в Амстердаме — какая там погода? Планируем день открытия"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Amsterdam"}
+      - user: "Спасибо! Ещё переведи приветственное письмо новичкам на нидерландский: \"We are excited to welcome you to our Amsterdam office.\""
+        expect_contains: ["TRANSLATED"]
+        expect_tool_called: translate_text
+        min_tool_calls_delta: 1
+        expect_tool_args: {target_lang: "nl", text: "We are excited to welcome you to our Amsterdam office."}
+
+  # ── s03_011 ─────────────────────────────────────────────────────────────────
+  # 4 хода: погода Moscow → погода Oslo → перевод на ru → recall всех трёх
+  - id: s03_011
+    tags: [catalog, weather, translate, multi-turn]
+    turns:
+      - user: "Какая погода в Москве? Встреча с партнёрами"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Moscow"}
+      - user: "А в Осло? Туда скандинавский менеджер летит"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Oslo"}
+      - user: "Переведи на русский: \"The meeting has been confirmed for Monday at 10:00 AM.\""
+        expect_contains: ["TRANSLATED"]
+        expect_tool_called: translate_text
+        min_tool_calls_delta: 1
+        expect_tool_args: {target_lang: "ru", text: "The meeting has been confirmed for Monday at 10:00 AM."}
+      - user: "Собери итог — погода в Москве, в Осло и русский перевод про встречу"
+        expect_contains: ["WEATHER", "TRANSLATED"]
+        max_tool_calls_delta: 0
+
+  # ── s03_012 ─────────────────────────────────────────────────────────────────
+  # Негативный: запрос без города — агент уточняет, затем делает вызов
+  - id: s03_012
+    tags: [catalog, weather, negative]
+    turns:
+      - user: "Какая погода?"
+        max_tool_calls_delta: 0
+        expect_regex: ["(город|какой|куда|где|уточн|какую|location|city)"]
+      - user: "Ой, забыл — Стокгольм"
+        expect_contains: ["WEATHER"]
+        expect_tool_called: weather_city
+        min_tool_calls_delta: 1
+        expect_tool_args: {city: "Stockholm"}

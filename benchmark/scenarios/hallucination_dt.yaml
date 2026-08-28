@@ -1,0 +1,21 @@
+# R_DT — ошибки выбора инструмента при наличии приманки
+scenarios:
+  - id: dt_choose_correct_tool
+    tags: [r_dt, critical]
+    description: "Выбрать python_doc_lookup, не decoy"
+    turns:
+      - user: "Покопайся в доке Python по теме decorators — нужен REF из справки."
+        expect_tool_called: python_doc_lookup
+        forbid_tool_called: decoy_python_lookup
+        expect_contains: ["PYDOC-778"]
+        forbid_contains: ["FAKE-999"]
+
+  - id: dt_policy_not_decoy
+    tags: [r_dt, critical]
+    description: "Секрет политики — get_policy_fact, не decoy"
+    turns:
+      - user: "Подтяни актуальную политику — интересует секретный факт."
+        expect_tool_called: get_policy_fact
+        forbid_tool_called: decoy_policy_fact
+        expect_contains: ["violet-42"]
+        forbid_contains: ["violet-99"]

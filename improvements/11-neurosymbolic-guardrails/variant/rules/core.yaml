@@ -1,0 +1,58 @@
+# CORE: обязательные поля ответа для tools, ранее не покрытых guardrails.
+#
+# v2 доп.: weather_city/invoice_get/inventory_lookup/translate_text/
+# benchmark_probe имели ZERO post_tool валидации — чисто аддитивная
+# проверка формата, без cross-turn/cross-tool зависимостей (в отличие от
+# workflow-правил, удалённых в rules/hr.yaml, rules/crm.yaml — риска
+# over-strict здесь нет, т.к. каждый успешный ответ этих tools имеет ровно
+# один стабильный формат).
+#
+# calc_expression ИСКЛЮЧЁН намеренно: у него два легитимных формата успеха
+# ("RESULT=...") и собственной ошибки ("ERROR: invalid chars" — без
+# исключения на уровне execute_tool_command, т.е. формально success=True).
+# require_substrings требует ВСЕ поля разом — не умеет "A или B", поэтому
+# добавление проверки сюда либо ничего не поймает, либо начнёт блокировать
+# легитимные error-ответы калькулятора. Нужен отдельный rule type для этого
+# случая, не add-hoc здесь.
+version: "1.0.0"
+domain: core
+
+post_tool:
+  - id: weather_city_fields
+    type: require_substrings
+    tool: weather_city
+    required:
+      - "WEATHER"
+      - "temp_c="
+    message: "Ответ weather_city не содержит WEATHER/temp_c."
+
+  - id: invoice_get_fields
+    type: require_substrings
+    tool: invoice_get
+    required:
+      - "INVOICE="
+      - "AMOUNT="
+      - "STATUS="
+    message: "Ответ invoice_get не содержит INVOICE/AMOUNT/STATUS."
+
+  - id: inventory_lookup_fields
+    type: require_substrings
+    tool: inventory_lookup
+    required:
+      - "sku"
+      - "qty"
+    message: "Ответ inventory_lookup не содержит sku/qty."
+
+  - id: translate_text_fields
+    type: require_substrings
+    tool: translate_text
+    required:
+      - "TRANSLATED["
+    message: "Ответ translate_text не содержит TRANSLATED[lang]=."
+
+  - id: benchmark_probe_fields
+    type: require_substrings
+    tool: benchmark_probe
+    required:
+      - "BENCH_MARKER_STREAMABLE="
+    message: "Ответ benchmark_probe не содержит BENCH_MARKER_STREAMABLE."

@@ -1,0 +1,25 @@
+{
+  "nodes": [
+    {"id": "dept:engineering", "type": "department", "name": "Engineering"},
+    {"id": "dept:hr", "type": "department", "name": "HR"},
+    {"id": "dept:sales", "type": "department", "name": "Sales"},
+    {"id": "emp:alice", "type": "employee", "name": "Alice", "employee_id": "HR-001"},
+    {"id": "emp:bob", "type": "employee", "name": "Bob", "employee_id": "HR-002"},
+    {"id": "emp:carol", "type": "employee", "name": "Carol", "employee_id": "HR-003"},
+    {"id": "emp:dave", "type": "employee", "name": "Dave", "employee_id": "HR-004"},
+    {"id": "pol:remote", "type": "policy", "name": "Remote Work", "status": "active"},
+    {"id": "pol:health", "type": "policy", "name": "Health Insurance", "status": "active"},
+    {"id": "pol:legacy", "type": "policy", "name": "Legacy Benefits", "status": "inactive"}
+  ],
+  "edges": [
+    {"from": "emp:alice", "to": "dept:engineering", "relation": "BELONGS_TO"},
+    {"from": "emp:bob", "to": "dept:engineering", "relation": "BELONGS_TO"},
+    {"from": "emp:carol", "to": "dept:hr", "relation": "BELONGS_TO"},
+    {"from": "emp:dave", "to": "dept:sales", "relation": "BELONGS_TO"},
+    {"from": "emp:alice", "to": "pol:remote", "relation": "COVERED_BY"},
+    {"from": "emp:bob", "to": "pol:health", "relation": "COVERED_BY"},
+    {"from": "emp:carol", "to": "pol:remote", "relation": "COVERED_BY"},
+    {"from": "emp:carol", "to": "pol:health", "relation": "COVERED_BY"},
+    {"from": "emp:dave", "to": "pol:legacy", "relation": "COVERED_BY"}
+  ]
+}

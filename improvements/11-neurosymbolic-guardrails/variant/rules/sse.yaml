@@ -1,0 +1,23 @@
+# SSE: обязательные поля ответа для benchmark_sse_probe/sse_audit_log.
+#
+# v2 доп.: как и core.yaml — чисто аддитивная field-валидация, оба tool
+# имеют ровно один стабильный формат ответа, cross-turn зависимостей нет.
+version: "1.0.0"
+domain: sse
+
+post_tool:
+  - id: benchmark_sse_probe_fields
+    type: require_substrings
+    tool: benchmark_sse_probe
+    required:
+      - "BENCH_MARKER_SSE="
+    message: "Ответ benchmark_sse_probe не содержит BENCH_MARKER_SSE."
+
+  - id: sse_audit_log_fields
+    type: require_substrings
+    tool: sse_audit_log
+    required:
+      - "AUDIT"
+      - "events="
+      - "marker="
+    message: "Ответ sse_audit_log не содержит AUDIT/events/marker."

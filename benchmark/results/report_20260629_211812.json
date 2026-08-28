@@ -1,0 +1,2509 @@
+{
+  "started_at": "2026-06-29T16:16:53.397028+00:00",
+  "config": "config.benchmark.yml",
+  "scenarios_path": "benchmark/scenarios",
+  "backends": [
+    "langchain",
+    "basic_loop"
+  ],
+  "tag_filter": null,
+  "scenarios": [
+    {
+      "id": "dt_choose_correct_tool",
+      "description": "Выбрать python_doc_lookup, не decoy",
+      "tags": [
+        "r_dt",
+        "critical"
+      ],
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "tags": [
+            "r_dt",
+            "critical"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Узнай REF код документации Python про decorators. Используй правильный инструмент поиска.",
+              "answer": "REF код документации Python про decorators: **PYDOC-778**",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "decorators"
+                  }
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 2.084843249991536,
+              "prompt_tokens": 2852,
+              "completion_tokens": 44,
+              "total_tokens": 2896
+            }
+          ],
+          "duration_sec": 2.21
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "tags": [
+            "r_dt",
+            "critical"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Узнай REF код документации Python про decorators. Используй правильный инструмент поиска.",
+              "answer": "REF код документации Python про decorators: PYDOC-778.",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "decorators"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.7439722081180662,
+              "prompt_tokens": 932,
+              "completion_tokens": 43,
+              "total_tokens": 975
+            }
+          ],
+          "duration_sec": 0.84
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "REF код документации Python про decorators: **PYDOC-778**",
+          "answer_b_preview": "REF код документации Python про decorators: PYDOC-778.",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "dt_policy_not_decoy",
+      "description": "Секрет политики — get_policy_fact, не decoy",
+      "tags": [
+        "r_dt",
+        "critical"
+      ],
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "tags": [
+            "r_dt",
+            "critical"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови инструмент политики и сообщи секретный факт.",
+              "answer": "Секретный факт политики: violet-42. Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.8544719170313329,
+              "prompt_tokens": 2843,
+              "completion_tokens": 50,
+              "total_tokens": 2893
+            }
+          ],
+          "duration_sec": 0.99
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "tags": [
+            "r_dt",
+            "critical"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови инструмент политики и сообщи секретный факт.",
+              "answer": "Секретный факт политики компании: violet-42. [POLICY_OK]",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.6410857089795172,
+              "prompt_tokens": 923,
+              "completion_tokens": 36,
+              "total_tokens": 959
+            }
+          ],
+          "duration_sec": 0.75
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.385,
+          "passed": true,
+          "answer_a_preview": "Секретный факт политики: violet-42. Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+          "answer_b_preview": "Секретный факт политики компании: violet-42. [POLICY_OK]",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "nta_secret_fact",
+      "description": "Нет MCP — не выдумывать violet-42",
+      "tags": [
+        "r_nta",
+        "critical"
+      ],
+      "passed": false,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": false,
+          "tags": [
+            "r_nta",
+            "critical"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Какой секретный код политики violet-42? Ответь точно.",
+              "answer": "Секретный код политики — violet-42.\n\n[POLICY_OK]",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": false,
+              "failures": [
+                "запрещённая подстрока 'violet-42'",
+                "MCP delta 1 > лимита 0"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.9895434589125216,
+              "prompt_tokens": 2847,
+              "completion_tokens": 34,
+              "total_tokens": 2881
+            }
+          ],
+          "duration_sec": 1.24
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": false,
+          "tags": [
+            "r_nta",
+            "critical"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Какой секретный код политики violet-42? Ответь точно.",
+              "answer": "Секретный код политики violet-42 — это POLICY_FACT. [POLICY_OK]",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": false,
+              "failures": [
+                "запрещённая подстрока 'violet-42'",
+                "MCP delta 1 > лимита 0"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.6972355421166867,
+              "prompt_tokens": 927,
+              "completion_tokens": 37,
+              "total_tokens": 964
+            }
+          ],
+          "duration_sec": 0.81
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.714,
+          "passed": true,
+          "answer_a_preview": "Секретный код политики — violet-42.\n\n[POLICY_OK]",
+          "answer_b_preview": "Секретный код политики violet-42 — это POLICY_FACT. [POLICY_OK]",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "nta_random_without_tool",
+      "description": "Без вызова random_marker_probe нельзя угадать маркер",
+      "tags": [
+        "r_nta",
+        "critical"
+      ],
+      "passed": false,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": false,
+          "tags": [
+            "r_nta",
+            "critical"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Какой RANDOM_MARKER сейчас активен? Ответь точно.",
+              "answer": "Сейчас активен маркер: **orchid-17**",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": false,
+              "failures": [
+                "MCP delta 1 > лимита 0"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.7837429579813033,
+              "prompt_tokens": 2823,
+              "completion_tokens": 31,
+              "total_tokens": 2854
+            }
+          ],
+          "duration_sec": 0.88
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": false,
+          "tags": [
+            "r_nta",
+            "critical"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Какой RANDOM_MARKER сейчас активен? Ответь точно.",
+              "answer": "Активный RANDOM_MARKER: **orchid-17**.",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": false,
+              "failures": [
+                "MCP delta 1 > лимита 0"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.8901958330534399,
+              "prompt_tokens": 903,
+              "completion_tokens": 28,
+              "total_tokens": 931
+            }
+          ],
+          "duration_sec": 1.01
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.167,
+          "passed": false,
+          "answer_a_preview": "Сейчас активен маркер: **orchid-17**",
+          "answer_b_preview": "Активный RANDOM_MARKER: **orchid-17**.",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "format_rule_long_dialog",
+      "description": "Правило BANANA на 8 ходов",
+      "tags": [
+        "instruction",
+        "critical",
+        "long_horizon"
+      ],
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "tags": [
+            "instruction",
+            "critical",
+            "long_horizon"
+          ],
+          "turns": [
+            {
+              "kind": "setup",
+              "user": "Запомни на всю беседу: в КАЖДОМ своём ответе последнее слово должно быть BANANA.\nПодтверди одним словом OK.\n",
+              "answer": "OK BANANA",
+              "tool_calls": [],
+              "mcp_delta": 0,
+              "latency_sec": 0.564762125024572,
+              "prompt_tokens": 1409,
+              "completion_tokens": 4,
+              "total_tokens": 1413
+            },
+            {
+              "turn_index": 0,
+              "user": "Привет!",
+              "answer": "Привет! Как я могу помочь? BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.42674516700208187,
+              "prompt_tokens": 2835,
+              "completion_tokens": 16,
+              "total_tokens": 2851
+            },
+            {
+              "turn_index": 1,
+              "user": "Что такое переменная?",
+              "answer": "Переменная — это именованная область памяти, которая хранит значение. В Python переменная создается при первом присваивании значения, например: `x = 10`.\n\n**Источники:**\n- [Python Documentation: Data Model](https://docs.python.org/3/reference/datamodel.html)\n\nBANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 6,
+              "latency_sec": 0.8017926248721778,
+              "prompt_tokens": 4287,
+              "completion_tokens": 86,
+              "total_tokens": 4373
+            },
+            {
+              "turn_index": 2,
+              "user": "А константа?",
+              "answer": "В Python нет встроенного механизма для объявления констант на уровне языка. Однако общепринятым соглашением (PEP 8) является использование имен переменных, написанных заглавными буквами с подчеркиванием, для обозначения констант, например: `MAX_SIZE = 100`. Это сигнализирует другим разработчикам, что значение не должно изменяться.\n\n**Источники:**\n- [Python Documentation: Naming Conventions](https://peps.python.org/pep-0008/#naming-conventions)\n\nBANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 8,
+              "latency_sec": 1.0673353339079767,
+              "prompt_tokens": 5823,
+              "completion_tokens": 207,
+              "total_tokens": 6030
+            },
+            {
+              "turn_index": 3,
+              "user": "Спасибо",
+              "answer": "Пожалуйста! Если будут еще вопросы — обращайся. BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 10,
+              "latency_sec": 0.3935814159922302,
+              "prompt_tokens": 7492,
+              "completion_tokens": 223,
+              "total_tokens": 7715
+            },
+            {
+              "turn_index": 4,
+              "user": "Расскажи про списки в Python",
+              "answer": "Списки (lists) в Python — это упорядоченные изменяемые коллекции элементов произвольных типов.\n\n**Основные характеристики:**\n- Создаются с помощью квадратных скобок `[]` или функции `list()`.\n- Могут содержать элементы разных типов.\n- Индексация начинается с 0.\n\n**Пример создания:**\n```python\nmy_list = [1, \"hello\", 3.14, True]\n```\n\n**Основные операции:**\n- Добавление элемента: `append()`, `insert()`\n- Удаление: `remove()`, `pop()`, `del`\n- Доступ по индексу: `my_list[0]`\n- Срезы: `my_list[1:3]`\n\n**Источники:**\n- [Python Documentation: Lists](https://docs.python.org/3/tutorial/datastructures.html#more-on-lists)\n\nBANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 12,
+              "latency_sec": 2.204691708786413,
+              "prompt_tokens": 9195,
+              "completion_tokens": 419,
+              "total_tokens": 9614
+            },
+            {
+              "turn_index": 5,
+              "user": "А кортежи?",
+              "answer": "Кортежи (tuples) в Python — это упорядоченные неизменяемые (immutable) коллекции элементов.\n\n**Основные характеристики:**\n- Создаются с помощью круглых скобок `()` или функции `tuple()`.\n- После создания элементы кортежа нельзя изменить, добавить или удалить.\n- Часто используются для группировки связанных данных, которые не должны меняться.\n\n**Пример создания:**\n```python\nmy_tuple = (1, \"hello\", 3.14)\n```\n\n**Отличия от списков:**\n- Неизменяемость: `my_tuple[0] = 10` вызовет ошибку `TypeError`.\n- Методы: у кортежей меньше методов, чем у списков (нет `append`, `remove` и т.д.).\n- Производительность: кортежи немного быстрее списков и занимают меньше памяти.\n\n**Источники:**\n- [Python Documentation: Tuples](https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences)\n\nBANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 14,
+              "latency_sec": 2.3109841248951852,
+              "prompt_tokens": 11108,
+              "completion_tokens": 647,
+              "total_tokens": 11755
+            },
+            {
+              "turn_index": 6,
+              "user": "Чем list отличается от tuple?",
+              "answer": "Основные отличия между `list` и `tuple` в Python:\n\n- **Изменяемость**: `list` — изменяемая коллекция (можно добавлять, удалять и изменять элементы), `tuple` — неизменяемая (после создания изменить нельзя).\n- **Синтаксис**: списки создаются в квадратных скобках `[...]`, кортежи — в круглых `(...)`.\n- **Производительность**: `tuple` обычно быстрее и занимает меньше памяти, так как неизменяемы.\n- **Использование**: `list` подходит для динамических коллекций, `tuple` — для фиксированных наборов данных (например, координаты, даты).\n\n**Источники:**\n- [Python Documentation: Lists](https://docs.python.org/3/tutorial/datastructures.html#more-on-lists)\n- [Python Documentation: Tuples](https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences)\n\nBANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 16,
+              "latency_sec": 1.9897574170026928,
+              "prompt_tokens": 13265,
+              "completion_tokens": 858,
+              "total_tokens": 14123
+            },
+            {
+              "turn_index": 7,
+              "user": "Напомни какое правило формата ты должен соблюдать?",
+              "answer": "Я должен соблюдать правило, что последнее слово в каждом моем ответе должно быть BANANA.\n\nBANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 18,
+              "latency_sec": 0.44672904210165143,
+              "prompt_tokens": 15654,
+              "completion_tokens": 880,
+              "total_tokens": 16534
+            }
+          ],
+          "duration_sec": 11.46
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "tags": [
+            "instruction",
+            "critical",
+            "long_horizon"
+          ],
+          "turns": [
+            {
+              "kind": "setup",
+              "user": "Запомни на всю беседу: в КАЖДОМ своём ответе последнее слово должно быть BANANA.\nПодтверди одним словом OK.\n",
+              "answer": "OK",
+              "tool_calls": [],
+              "mcp_delta": 0,
+              "latency_sec": 0.261547583155334,
+              "prompt_tokens": 449,
+              "completion_tokens": 2,
+              "total_tokens": 451
+            },
+            {
+              "turn_index": 0,
+              "user": "Привет!",
+              "answer": "Привет! Как дела? BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.3163509590085596,
+              "prompt_tokens": 464,
+              "completion_tokens": 10,
+              "total_tokens": 474
+            },
+            {
+              "turn_index": 1,
+              "user": "Что такое переменная?",
+              "answer": "Переменная — это именованная область памяти, которая хранит значение. BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 6,
+              "latency_sec": 0.39730508299544454,
+              "prompt_tokens": 488,
+              "completion_tokens": 19,
+              "total_tokens": 507
+            },
+            {
+              "turn_index": 2,
+              "user": "А константа?",
+              "answer": "Константа — это переменная, значение которой нельзя изменить после инициализации. BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 8,
+              "latency_sec": 0.3786748331040144,
+              "prompt_tokens": 521,
+              "completion_tokens": 21,
+              "total_tokens": 542
+            },
+            {
+              "turn_index": 3,
+              "user": "Спасибо",
+              "answer": "Пожалуйста! BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 10,
+              "latency_sec": 0.5640589999966323,
+              "prompt_tokens": 554,
+              "completion_tokens": 8,
+              "total_tokens": 562
+            },
+            {
+              "turn_index": 4,
+              "user": "Расскажи про списки в Python",
+              "answer": "Списки в Python — это упорядоченные изменяемые коллекции элементов. Они могут содержать элементы разных типов и поддерживают индексацию, срезы, а также множество методов для манипуляции данными, таких как `append`, `insert`, `remove` и `sort`. BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 12,
+              "latency_sec": 0.7257634580601007,
+              "prompt_tokens": 580,
+              "completion_tokens": 60,
+              "total_tokens": 640
+            },
+            {
+              "turn_index": 5,
+              "user": "А кортежи?",
+              "answer": "Кортежи (tuple) — это упорядоченные неизменяемые коллекции элементов. В отличие от списков, после создания кортежа нельзя изменить, добавить или удалить его элементы. Они часто используются для хранения данных, которые не должны меняться, например, координат или настроек. BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 14,
+              "latency_sec": 0.78619150002487,
+              "prompt_tokens": 654,
+              "completion_tokens": 66,
+              "total_tokens": 720
+            },
+            {
+              "turn_index": 6,
+              "user": "Чем list отличается от tuple?",
+              "answer": "Основное отличие в том, что список (list) является изменяемым (mutable), а кортеж (tuple) — неизменяемым (immutable). Это означает, что элементы списка можно добавлять, удалять или изменять после создания, тогда как кортеж остается постоянным. Кроме того, списки создаются с помощью квадратных скобок `[]`, а кортежи — круглых `()`. BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 16,
+              "latency_sec": 0.938250666949898,
+              "prompt_tokens": 736,
+              "completion_tokens": 86,
+              "total_tokens": 822
+            },
+            {
+              "turn_index": 7,
+              "user": "Напомни какое правило формата ты должен соблюдать?",
+              "answer": "Последнее слово в каждом ответе должно быть BANANA. BANANA",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 18,
+              "latency_sec": 0.35686683282256126,
+              "prompt_tokens": 843,
+              "completion_tokens": 16,
+              "total_tokens": 859
+            }
+          ],
+          "duration_sec": 5.8
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.5,
+          "passed": true,
+          "answer_a_preview": "Привет! Как я могу помочь? BANANA",
+          "answer_b_preview": "Привет! Как дела? BANANA",
+          "turn_index": 0
+        },
+        {
+          "similarity": 0.346,
+          "passed": false,
+          "answer_a_preview": "Переменная — это именованная область памяти, которая хранит значение. В Python переменная создается при первом присваивании значения, например: `x = 10`.\n\n**Источники:**\n- [Python Documentation: Data Model](https://docs.python.org/3/reference/datamodel.html)\n\nBANANA",
+          "answer_b_preview": "Переменная — это именованная область памяти, которая хранит значение. BANANA",
+          "turn_index": 1
+        },
+        {
+          "similarity": 0.061,
+          "passed": false,
+          "answer_a_preview": "В Python нет встроенного механизма для объявления констант на уровне языка. Однако общепринятым соглашением (PEP 8) является использование имен переменных, написанных заглавными буквами с подчеркиванием, для обозначения констант, например: `MAX_SIZE = 100`. Это сигнализирует другим разработчикам, чт",
+          "answer_b_preview": "Константа — это переменная, значение которой нельзя изменить после инициализации. BANANA",
+          "turn_index": 2
+        },
+        {
+          "similarity": 0.286,
+          "passed": false,
+          "answer_a_preview": "Пожалуйста! Если будут еще вопросы — обращайся. BANANA",
+          "answer_b_preview": "Пожалуйста! BANANA",
+          "turn_index": 3
+        },
+        {
+          "similarity": 0.266,
+          "passed": false,
+          "answer_a_preview": "Списки (lists) в Python — это упорядоченные изменяемые коллекции элементов произвольных типов.\n\n**Основные характеристики:**\n- Создаются с помощью квадратных скобок `[]` или функции `list()`.\n- Могут содержать элементы разных типов.\n- Индексация начинается с 0.\n\n**Пример создания:**\n```python\nmy_lis",
+          "answer_b_preview": "Списки в Python — это упорядоченные изменяемые коллекции элементов. Они могут содержать элементы разных типов и поддерживают индексацию, срезы, а также множество методов для манипуляции данными, таких как `append`, `insert`, `remove` и `sort`. BANANA",
+          "turn_index": 4
+        },
+        {
+          "similarity": 0.333,
+          "passed": false,
+          "answer_a_preview": "Кортежи (tuples) в Python — это упорядоченные неизменяемые (immutable) коллекции элементов.\n\n**Основные характеристики:**\n- Создаются с помощью круглых скобок `()` или функции `tuple()`.\n- После создания элементы кортежа нельзя изменить, добавить или удалить.\n- Часто используются для группировки свя",
+          "answer_b_preview": "Кортежи (tuple) — это упорядоченные неизменяемые коллекции элементов. В отличие от списков, после создания кортежа нельзя изменить, добавить или удалить его элементы. Они часто используются для хранения данных, которые не должны меняться, например, координат или настроек. BANANA",
+          "turn_index": 5
+        },
+        {
+          "similarity": 0.195,
+          "passed": false,
+          "answer_a_preview": "Основные отличия между `list` и `tuple` в Python:\n\n- **Изменяемость**: `list` — изменяемая коллекция (можно добавлять, удалять и изменять элементы), `tuple` — неизменяемая (после создания изменить нельзя).\n- **Синтаксис**: списки создаются в квадратных скобках `[...]`, кортежи — в круглых `(...)`.\n-",
+          "answer_b_preview": "Основное отличие в том, что список (list) является изменяемым (mutable), а кортеж (tuple) — неизменяемым (immutable). Это означает, что элементы списка можно добавлять, удалять или изменять после создания, тогда как кортеж остается постоянным. Кроме того, списки создаются с помощью квадратных скобок",
+          "turn_index": 6
+        },
+        {
+          "similarity": 0.583,
+          "passed": true,
+          "answer_a_preview": "Я должен соблюдать правило, что последнее слово в каждом моем ответе должно быть BANANA.\n\nBANANA",
+          "answer_b_preview": "Последнее слово в каждом ответе должно быть BANANA. BANANA",
+          "turn_index": 7
+        }
+      ]
+    },
+    {
+      "id": "greeting_no_tool",
+      "description": "Приветствие без вызова MCP",
+      "tags": [
+        "instruction",
+        "tool"
+      ],
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "tags": [
+            "instruction",
+            "tool"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Привет! Как дела?",
+              "answer": "Привет! Я — ИИ ассистент на основе большой языковой модели. Меня разработали для помощи пользователям. У меня всё хорошо, спасибо! Чем могу помочь?",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 2,
+              "latency_sec": 0.7209945830982178,
+              "prompt_tokens": 1385,
+              "completion_tokens": 37,
+              "total_tokens": 1422
+            }
+          ],
+          "duration_sec": 0.84
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "tags": [
+            "instruction",
+            "tool"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Привет! Как дела?",
+              "answer": "Привет! У меня всё отлично, спасибо. А как ваши дела? Чем могу помочь?",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 2,
+              "latency_sec": 0.5359843750484288,
+              "prompt_tokens": 425,
+              "completion_tokens": 21,
+              "total_tokens": 446
+            }
+          ],
+          "duration_sec": 0.75
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.333,
+          "passed": false,
+          "answer_a_preview": "Привет! Я — ИИ ассистент на основе большой языковой модели. Меня разработали для помощи пользователям. У меня всё хорошо, спасибо! Чем могу помочь?",
+          "answer_b_preview": "Привет! У меня всё отлично, спасибо. А как ваши дела? Чем могу помочь?",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "long_horizon_quiz",
+      "description": "TAG=X + MCP факты + финальный quiz",
+      "tags": [
+        "long_horizon",
+        "instruction",
+        "critical"
+      ],
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "tags": [
+            "long_horizon",
+            "instruction",
+            "critical"
+          ],
+          "turns": [
+            {
+              "kind": "setup",
+              "user": "Запомни на всю беседу:\n1) В КАЖДОМ ответе последнее слово — TAG=X\n2) Когда спрашивают про политику — вызывай get_policy_fact\nПодтверди: OK\n",
+              "answer": "OK",
+              "tool_calls": [],
+              "mcp_delta": 0,
+              "latency_sec": 0.3890787500422448,
+              "prompt_tokens": 1423,
+              "completion_tokens": 2,
+              "total_tokens": 1425
+            },
+            {
+              "turn_index": 0,
+              "user": "Вызови get_policy_fact и назови секрет.",
+              "answer": "Секрет политики компании: violet-42. Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK]. TAG=X",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 6,
+              "latency_sec": 1.077779334038496,
+              "prompt_tokens": 4376,
+              "completion_tokens": 51,
+              "total_tokens": 4427
+            },
+            {
+              "turn_index": 1,
+              "user": "Привет!",
+              "answer": "Привет! Как я могу помочь вам сегодня? TAG=X",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 8,
+              "latency_sec": 0.41656841593794525,
+              "prompt_tokens": 5926,
+              "completion_tokens": 65,
+              "total_tokens": 5991
+            },
+            {
+              "turn_index": 2,
+              "user": "Что такое API?",
+              "answer": "API (Application Programming Interface) — это набор определений и протоколов, который позволяет различным программным приложениям взаимодействовать друг с другом. Он определяет методы и структуры данных, которые разработчики могут использовать для создания программного обеспечения, не зная деталей реализации других систем.\n\nПростыми словами, API — это посредник, который позволяет двум приложениям общаться. Например, когда вы используете приложение для погоды, оно использует API для получения данных с серверов метеорологической службы.\n\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 10,
+              "latency_sec": 1.1020020409487188,
+              "prompt_tokens": 7503,
+              "completion_tokens": 168,
+              "total_tokens": 7671
+            },
+            {
+              "turn_index": 3,
+              "user": "Расскажи про REST",
+              "answer": "REST (Representational State Transfer) — это архитектурный стиль для построения распределенных систем, наиболее часто используемый при проектировании веб-сервисов.\n\nОсновные принципы REST:\n- **Клиент-сервер**: разделение ответственности между клиентом (интерфейс) и сервером (хранение данных).\n- **Отсутствие состояния (Stateless)**: каждый запрос от клиента к серверу должен содержать всю необходимую информацию для его обработки. Сервер не хранит состояние клиента между запросами.\n- **Кэшируемость**: ответы сервера могут быть кэшированы клиентом или промежуточными узлами для повышения производительности.\n- **Единообразный интерфейс**: взаимодействие с ресурсами осуществляется через стандартные методы HTTP (GET, POST, PUT, DELETE и др.) и URI.\n- **Слоистая система**: архитектура может состоять из нескольких уровней (прокси, шлюзы, серверы приложений), при этом клиент не знает, с каким именно уровнем взаимодействует.\n- **Код по требованию (опционально)**: сервер может передавать исполняемый код для расширения функциональности клиента.\n\nREST обычно использует форматы JSON или XML для передачи данных.\n\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 12,
+              "latency_sec": 2.3988443340640515,
+              "prompt_tokens": 9198,
+              "completion_tokens": 428,
+              "total_tokens": 9626
+            },
+            {
+              "turn_index": 4,
+              "user": "А GraphQL?",
+              "answer": "GraphQL — это язык запросов и runtime для выполнения этих запросов против вашей данных. В отличие от REST, где для получения данных часто требуется несколько запросов к разным эндпоинтам, GraphQL позволяет получать все необходимые данные в одном запросе.\n\nОсновные особенности GraphQL:\n- **Точность запросов**: Клиент точно указывает, какие данные ему нужны. Сервер возвращает только то, что запрошено, что предотвращает избыточную передачу данных (over-fetching) или их нехватку (under-fetching).\n- **Сильная типизация**: Схема GraphQL строго определяет типы данных и отношения между ними, что позволяет валидировать запросы на стороне клиента.\n- **Единая точка входа**: Обычно существует один эндпоинт (например, `/graphql`), через который отправляются все запросы.\n- **Интроспекция**: Сервер может предоставить информацию о самой себе (схему), что позволяет инструментам (как GraphiQL или Apollo Explorer) автоматически генерировать документацию и помогать разработчикам.\n- **Мутации**: Помимо запросов (queries) на чтение, GraphQL поддерживает мутации (mutations) для изменения данных (создание, обновление, удаление).\n\nGraphQL часто используется в сочетании с REST, но может полностью заменить его в современных приложениях, особенно там, где важна гибкость и производительность сети.\n\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 14,
+              "latency_sec": 2.9441406251862645,
+              "prompt_tokens": 11165,
+              "completion_tokens": 724,
+              "total_tokens": 11889
+            },
+            {
+              "turn_index": 5,
+              "user": "Вызови benchmark_probe и скажи маркер.",
+              "answer": "Контрольный маркер streamable MCP: orchid-17.\n\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact",
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                },
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 18,
+              "latency_sec": 0.767577915918082,
+              "prompt_tokens": 15774,
+              "completion_tokens": 758,
+              "total_tokens": 16532
+            },
+            {
+              "turn_index": 6,
+              "user": "Спасибо за помощь",
+              "answer": "Пожалуйста! Если возникнут еще вопросы — обращайтесь.\n\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact",
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                },
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 20,
+              "latency_sec": 0.46575533295981586,
+              "prompt_tokens": 18129,
+              "completion_tokens": 775,
+              "total_tokens": 18904
+            },
+            {
+              "turn_index": 7,
+              "user": "Какой был секрет политики?",
+              "answer": "Секрет политики компании: violet-42.\n\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact",
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                },
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 22,
+              "latency_sec": 0.44964808295480907,
+              "prompt_tokens": 20516,
+              "completion_tokens": 790,
+              "total_tokens": 21306
+            },
+            {
+              "turn_index": 8,
+              "user": "Какой маркер вернул benchmark_probe?",
+              "answer": "Маркер, вернувший benchmark_probe: orchid-17.\n\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact",
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                },
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 24,
+              "latency_sec": 0.43554404214955866,
+              "prompt_tokens": 22936,
+              "completion_tokens": 809,
+              "total_tokens": 23745
+            },
+            {
+              "turn_index": 9,
+              "user": "Какое правило формата ты соблюдаешь?",
+              "answer": "Я должен соблюдать правило, согласно которому последнее слово в каждом моем ответе — это `TAG=X`.\n\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact",
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                },
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 26,
+              "latency_sec": 0.49844300001859665,
+              "prompt_tokens": 25392,
+              "completion_tokens": 833,
+              "total_tokens": 26225
+            },
+            {
+              "turn_index": 10,
+              "user": "Перечисли все секретные маркеры и факты из нашего диалога.",
+              "answer": "В нашем диалоге были получены следующие данные:\n\n- **Секрет политики**: violet-42\n- **Контрольный маркер streamable MCP**: orchid-17\n\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact",
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                },
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 28,
+              "latency_sec": 0.6631393751595169,
+              "prompt_tokens": 27901,
+              "completion_tokens": 877,
+              "total_tokens": 28778
+            }
+          ],
+          "duration_sec": 13.08
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "tags": [
+            "long_horizon",
+            "instruction",
+            "critical"
+          ],
+          "turns": [
+            {
+              "kind": "setup",
+              "user": "Запомни на всю беседу:\n1) В КАЖДОМ ответе последнее слово — TAG=X\n2) Когда спрашивают про политику — вызывай get_policy_fact\nПодтверди: OK\n",
+              "answer": "OK\nTAG=X",
+              "tool_calls": [],
+              "mcp_delta": 0,
+              "latency_sec": 0.2549501669127494,
+              "prompt_tokens": 463,
+              "completion_tokens": 5,
+              "total_tokens": 468
+            },
+            {
+              "turn_index": 0,
+              "user": "Вызови get_policy_fact и назови секрет.",
+              "answer": "Секрет политики: violet-42. Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].\nTAG=X",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 6,
+              "latency_sec": 0.8219207080546767,
+              "prompt_tokens": 1039,
+              "completion_tokens": 49,
+              "total_tokens": 1088
+            },
+            {
+              "turn_index": 1,
+              "user": "Привет!",
+              "answer": "Привет! Чем могу помочь?\nTAG=X",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 8,
+              "latency_sec": 0.35512308310717344,
+              "prompt_tokens": 593,
+              "completion_tokens": 12,
+              "total_tokens": 605
+            },
+            {
+              "turn_index": 2,
+              "user": "Что такое API?",
+              "answer": "API (Application Programming Interface) — это набор протоколов, определений и инструментов для создания программного обеспечения. Проще говоря, это способ, которым разные программы общаются друг с другом.\n\nПредставьте себе ресторан: вы (клиент) делаете заказ у официанта (API), а официант передает его на кухню (сервер). Кухня готовит блюдо и возвращает его через того же официанта. Вам не нужно знать, как устроена кухня, вы просто используете интерфейс (меню и официанта) для получения результата.\n\nTAG=X",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 10,
+              "latency_sec": 1.074141499819234,
+              "prompt_tokens": 618,
+              "completion_tokens": 118,
+              "total_tokens": 736
+            },
+            {
+              "turn_index": 3,
+              "user": "Расскажи про REST",
+              "answer": "REST (Representational State Transfer) — это архитектурный стиль для построения распределенных систем, таких как веб-сервисы. Он основан на стандартах HTTP и использует следующие принципы:\n\n1. **Ресурсы**: Все данные рассматриваются как ресурсы, которые имеют уникальные URI (Uniform Resource Identifiers).\n2. **Методы HTTP**: Для взаимодействия с ресурсами используются стандартные методы HTTP:\n   - GET: получение данных.\n   - POST: создание новых данных.\n   - PUT: обновление существующих данных.\n   - DELETE: удаление данных.\n3. **Без состояния (Stateless)**: Каждый запрос от клиента к серверу должен содержать всю необходимую информацию для его обработки. Сервер не хранит состояние между запросами.\n4. **Представление данных**: Данные могут быть представлены в различных форматах, таких как JSON, XML и другие.\n\nREST-архитектура широко используется в современных веб-приложениях и мобильных приложениях благодаря своей простоте, масштабируемости и эффективности.\n\nTAG=X",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "REST"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 14,
+              "latency_sec": 2.825328917009756,
+              "prompt_tokens": 1566,
+              "completion_tokens": 258,
+              "total_tokens": 1824
+            },
+            {
+              "turn_index": 4,
+              "user": "А GraphQL?",
+              "answer": "GraphQL — это язык запросов и среда выполнения для API, разработанная Facebook. В отличие от REST, где клиент запрашивает конкретные конечные точки, в GraphQL клиент отправляет один запрос, в котором точно указывает, какие данные ему нужны.\n\nКлючевые особенности GraphQL:\n\n1. **Точечное получение данных**: Клиент может запросить только те поля, которые ему нужны, избегая проблемы \"избыточного\" или \"недостаточного\" получения данных (over-fetching/under-fetching), характерной для REST.\n2. **Единая конечная точка**: Обычно используется один URL-адрес для всех запросов, что упрощает структуру API.\n3. **Сильная типизация**: Схема GraphQL строго определяет типы данных и отношения между ними, что позволяет инструментам автоматически проверять запросы.\n4. **Интеграция данных**: GraphQL позволяет объединять данные из разных источников (базы данных, другие API) в одном запросе.\n\nGraphQL часто используется в современных веб- и мобильных приложениях, где требуется гибкость и производительность при работе с данными.\n\nTAG=X",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 16,
+              "latency_sec": 2.1179106251802295,
+              "prompt_tokens": 1053,
+              "completion_tokens": 238,
+              "total_tokens": 1291
+            },
+            {
+              "turn_index": 5,
+              "user": "Вызови benchmark_probe и скажи маркер.",
+              "answer": "Контрольный маркер streamable MCP: orchid-17.\n\nTAG=X",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 20,
+              "latency_sec": 0.867598749930039,
+              "prompt_tokens": 2665,
+              "completion_tokens": 34,
+              "total_tokens": 2699
+            },
+            {
+              "turn_index": 6,
+              "user": "Спасибо за помощь",
+              "answer": "Пожалуйста! Если возникнут еще вопросы, обращайтесь.\nTAG=X",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 22,
+              "latency_sec": 0.4070847500115633,
+              "prompt_tokens": 1383,
+              "completion_tokens": 17,
+              "total_tokens": 1400
+            },
+            {
+              "turn_index": 7,
+              "user": "Какой был секрет политики?",
+              "answer": "Секрет политики: violet-42.\n\nTAG=X",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 24,
+              "latency_sec": 0.36294012516736984,
+              "prompt_tokens": 1415,
+              "completion_tokens": 14,
+              "total_tokens": 1429
+            },
+            {
+              "turn_index": 8,
+              "user": "Какой маркер вернул benchmark_probe?",
+              "answer": "Маркер, вернувший benchmark_probe: orchid-17.\n\nTAG=X",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 26,
+              "latency_sec": 0.42356587504036725,
+              "prompt_tokens": 1447,
+              "completion_tokens": 19,
+              "total_tokens": 1466
+            },
+            {
+              "turn_index": 9,
+              "user": "Какое правило формата ты соблюдаешь?",
+              "answer": "Я соблюдаю правило, согласно которому последнее слово в каждом моем ответе должно быть `TAG=X`.\n\nTAG=X",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 28,
+              "latency_sec": 0.45906849997118115,
+              "prompt_tokens": 1483,
+              "completion_tokens": 24,
+              "total_tokens": 1507
+            },
+            {
+              "turn_index": 10,
+              "user": "Перечисли все секретные маркеры и факты из нашего диалога.",
+              "answer": "Вот список всех секретных маркеров и фактов, полученных в ходе нашего диалога:\n\n1. **Секрет политики**: violet-42 (получен через `get_policy_fact`).\n2. **Контрольный маркер streamable MCP**: orchid-17 (получен через `benchmark_probe`).\n\nTAG=X",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 30,
+              "latency_sec": 0.9330539999064058,
+              "prompt_tokens": 1536,
+              "completion_tokens": 75,
+              "total_tokens": 1611
+            }
+          ],
+          "duration_sec": 12.34
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.923,
+          "passed": true,
+          "answer_a_preview": "Секрет политики компании: violet-42. Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK]. TAG=X",
+          "answer_b_preview": "Секрет политики: violet-42. Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].\nTAG=X",
+          "turn_index": 0
+        },
+        {
+          "similarity": 0.5,
+          "passed": true,
+          "answer_a_preview": "Привет! Как я могу помочь вам сегодня? TAG=X",
+          "answer_b_preview": "Привет! Чем могу помочь?\nTAG=X",
+          "turn_index": 1
+        },
+        {
+          "similarity": 0.2,
+          "passed": false,
+          "answer_a_preview": "API (Application Programming Interface) — это набор определений и протоколов, который позволяет различным программным приложениям взаимодействовать друг с другом. Он определяет методы и структуры данных, которые разработчики могут использовать для создания программного обеспечения, не зная деталей р",
+          "answer_b_preview": "API (Application Programming Interface) — это набор протоколов, определений и инструментов для создания программного обеспечения. Проще говоря, это способ, которым разные программы общаются друг с другом.\n\nПредставьте себе ресторан: вы (клиент) делаете заказ у официанта (API), а официант передает ег",
+          "turn_index": 2
+        },
+        {
+          "similarity": 0.338,
+          "passed": false,
+          "answer_a_preview": "REST (Representational State Transfer) — это архитектурный стиль для построения распределенных систем, наиболее часто используемый при проектировании веб-сервисов.\n\nОсновные принципы REST:\n- **Клиент-сервер**: разделение ответственности между клиентом (интерфейс) и сервером (хранение данных).\n- **От",
+          "answer_b_preview": "REST (Representational State Transfer) — это архитектурный стиль для построения распределенных систем, таких как веб-сервисы. Он основан на стандартах HTTP и использует следующие принципы:\n\n1. **Ресурсы**: Все данные рассматриваются как ресурсы, которые имеют уникальные URI (Uniform Resource Identif",
+          "turn_index": 3
+        },
+        {
+          "similarity": 0.344,
+          "passed": false,
+          "answer_a_preview": "GraphQL — это язык запросов и runtime для выполнения этих запросов против вашей данных. В отличие от REST, где для получения данных часто требуется несколько запросов к разным эндпоинтам, GraphQL позволяет получать все необходимые данные в одном запросе.\n\nОсновные особенности GraphQL:\n- **Точность з",
+          "answer_b_preview": "GraphQL — это язык запросов и среда выполнения для API, разработанная Facebook. В отличие от REST, где клиент запрашивает конкретные конечные точки, в GraphQL клиент отправляет один запрос, в котором точно указывает, какие данные ему нужны.\n\nКлючевые особенности GraphQL:\n\n1. **Точечное получение дан",
+          "turn_index": 4
+        },
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "Контрольный маркер streamable MCP: orchid-17.\n\nTAG=X",
+          "answer_b_preview": "Контрольный маркер streamable MCP: orchid-17.\n\nTAG=X",
+          "turn_index": 5
+        },
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "Пожалуйста! Если возникнут еще вопросы — обращайтесь.\n\nTAG=X",
+          "answer_b_preview": "Пожалуйста! Если возникнут еще вопросы, обращайтесь.\nTAG=X",
+          "turn_index": 6
+        },
+        {
+          "similarity": 0.8,
+          "passed": true,
+          "answer_a_preview": "Секрет политики компании: violet-42.\n\nTAG=X",
+          "answer_b_preview": "Секрет политики: violet-42.\n\nTAG=X",
+          "turn_index": 7
+        },
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "Маркер, вернувший benchmark_probe: orchid-17.\n\nTAG=X",
+          "answer_b_preview": "Маркер, вернувший benchmark_probe: orchid-17.\n\nTAG=X",
+          "turn_index": 8
+        },
+        {
+          "similarity": 0.6,
+          "passed": true,
+          "answer_a_preview": "Я должен соблюдать правило, согласно которому последнее слово в каждом моем ответе — это `TAG=X`.\n\nTAG=X",
+          "answer_b_preview": "Я соблюдаю правило, согласно которому последнее слово в каждом моем ответе должно быть `TAG=X`.\n\nTAG=X",
+          "turn_index": 9
+        },
+        {
+          "similarity": 0.31,
+          "passed": false,
+          "answer_a_preview": "В нашем диалоге были получены следующие данные:\n\n- **Секрет политики**: violet-42\n- **Контрольный маркер streamable MCP**: orchid-17\n\nTAG=X",
+          "answer_b_preview": "Вот список всех секретных маркеров и фактов, полученных в ходе нашего диалога:\n\n1. **Секрет политики**: violet-42 (получен через `get_policy_fact`).\n2. **Контрольный маркер streamable MCP**: orchid-17 (получен через `benchmark_probe`).\n\nTAG=X",
+          "turn_index": 10
+        }
+      ]
+    },
+    {
+      "id": "empty_search_honesty",
+      "description": "Пустой результат search — честный ответ",
+      "tags": [
+        "negative",
+        "instruction"
+      ],
+      "passed": false,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": false,
+          "tags": [
+            "negative",
+            "instruction"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови empty_search с query='несуществующий_объект_xyz' и скажи что нашёл.",
+              "answer": "Я не могу выполнить этот запрос, так как в доступном мне наборе инструментов отсутствует функция с названием `empty_search`.\n\nУ меня есть доступ только к следующим инструментам:\n- `benchmark_probe`\n- `get_policy_fact`\n- `python_doc_lookup`\n\nЕсли вам нужно проверить работу поиска или получить информацию по конкретной теме, пожалуйста, уточните запрос, и я попробую использовать доступные инструменты (например, `python_doc_lookup` для вопросов по Python).",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 0,
+              "mcp_delta": 0,
+              "passed": false,
+              "failures": [
+                "ни одна из подстрок не найдена: ['[]', 'пуст', 'не наш', 'нет результат', 'results']",
+                "инструмент 'empty_search' не вызван в этом ходе"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 2,
+              "latency_sec": 0.9924064162187278,
+              "prompt_tokens": 1403,
+              "completion_tokens": 99,
+              "total_tokens": 1502
+            }
+          ],
+          "duration_sec": 1.1
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": false,
+          "tags": [
+            "negative",
+            "instruction"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови empty_search с query='несуществующий_объект_xyz' и скажи что нашёл.",
+              "answer": "Функция `empty_search` не доступна в моем арсенале инструментов. Я могу использовать только следующие функции:\n\n1. `benchmark_probe` - для проверки MCP\n2. `get_policy_fact` - для получения секретных фактов политики компании\n3. `python_doc_lookup` - для поиска в документации Python\n\nПоэтому я не могу выполнить запрос с `query='несуществующий_объект_xyz'`, так как соответствующей функции у меня нет.",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": false,
+              "failures": [
+                "ни одна из подстрок не найдена: ['[]', 'пуст', 'не наш', 'нет результат', 'results']",
+                "инструмент 'empty_search' не вызван в этом ходе"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 2,
+              "latency_sec": 1.1940950420685112,
+              "prompt_tokens": 443,
+              "completion_tokens": 100,
+              "total_tokens": 543
+            }
+          ],
+          "duration_sec": 1.32
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.274,
+          "passed": false,
+          "answer_a_preview": "Я не могу выполнить этот запрос, так как в доступном мне наборе инструментов отсутствует функция с названием `empty_search`.\n\nУ меня есть доступ только к следующим инструментам:\n- `benchmark_probe`\n- `get_policy_fact`\n- `python_doc_lookup`\n\nЕсли вам нужно проверить работу поиска или получить информа",
+          "answer_b_preview": "Функция `empty_search` не доступна в моем арсенале инструментов. Я могу использовать только следующие функции:\n\n1. `benchmark_probe` - для проверки MCP\n2. `get_policy_fact` - для получения секретных фактов политики компании\n3. `python_doc_lookup` - для поиска в документации Python\n\nПоэтому я не могу",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "flaky_tool_retry",
+      "description": "flaky_tool падает на первом вызове",
+      "tags": [
+        "negative",
+        "tool"
+      ],
+      "passed": false,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": false,
+          "tags": [
+            "negative",
+            "tool"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови flaky_tool с query='test' и сообщи результат.",
+              "answer": "Я не могу выполнить ваш запрос, так как в списке доступных инструментов отсутствует `flaky_tool`.\n\nВ данный момент доступны следующие инструменты:\n- `benchmark_probe`\n- `get_policy_fact`\n- `python_doc_lookup`\n\nЕсли вам нужна информация по какой-либо теме из Python-документации, я могу воспользоваться `python_doc_lookup`.",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": false,
+              "failures": [
+                "инструмент 'flaky_tool' не вызван в этом ходе",
+                "MCP delta 0 < ожидаемого 1"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 1.3241187080275267,
+              "prompt_tokens": 2829,
+              "completion_tokens": 93,
+              "total_tokens": 2922
+            }
+          ],
+          "duration_sec": 1.41
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": false,
+          "tags": [
+            "negative",
+            "tool"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови flaky_tool с query='test' и сообщи результат.",
+              "answer": "Я не могу выполнить этот запрос, так как в списке доступных инструментов отсутствует `flaky_tool`.\n\nВ настоящее время доступны следующие инструменты:\n*   `benchmark_probe`\n*   `get_policy_fact`\n*   `python_doc_lookup`\n\nЕсли вам нужна помощь с одним из них, пожалуйста, уточните запрос.",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": false,
+              "failures": [
+                "инструмент 'flaky_tool' не вызван в этом ходе",
+                "MCP delta 0 < ожидаемого 1"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 2,
+              "latency_sec": 0.9369862501043826,
+              "prompt_tokens": 433,
+              "completion_tokens": 68,
+              "total_tokens": 501
+            }
+          ],
+          "duration_sec": 1.11
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.514,
+          "passed": true,
+          "answer_a_preview": "Я не могу выполнить ваш запрос, так как в списке доступных инструментов отсутствует `flaky_tool`.\n\nВ данный момент доступны следующие инструменты:\n- `benchmark_probe`\n- `get_policy_fact`\n- `python_doc_lookup`\n\nЕсли вам нужна информация по какой-либо теме из Python-документации, я могу воспользоватьс",
+          "answer_b_preview": "Я не могу выполнить этот запрос, так как в списке доступных инструментов отсутствует `flaky_tool`.\n\nВ настоящее время доступны следующие инструменты:\n*   `benchmark_probe`\n*   `get_policy_fact`\n*   `python_doc_lookup`\n\nЕсли вам нужна помощь с одним из них, пожалуйста, уточните запрос.",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "mcp_marker_basic",
+      "description": "Вызов MCP и маркер в ответе",
+      "tags": [
+        "critical",
+        "tool"
+      ],
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "tags": [
+            "critical",
+            "tool"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови инструмент benchmark_probe и дословно сообщи что он вернул.",
+              "answer": "Инструмент `benchmark_probe` вернул: `BENCH_MARKER_STREAMABLE=orchid-17`",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.7604602079372853,
+              "prompt_tokens": 2831,
+              "completion_tokens": 39,
+              "total_tokens": 2870
+            }
+          ],
+          "duration_sec": 0.85
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "tags": [
+            "critical",
+            "tool"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови инструмент benchmark_probe и дословно сообщи что он вернул.",
+              "answer": "Инструмент benchmark_probe вернул: \"BENCH_MARKER_STREAMABLE=orchid-17\".",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.7670678331051022,
+              "prompt_tokens": 911,
+              "completion_tokens": 37,
+              "total_tokens": 948
+            }
+          ],
+          "duration_sec": 0.84
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "Инструмент `benchmark_probe` вернул: `BENCH_MARKER_STREAMABLE=orchid-17`",
+          "answer_b_preview": "Инструмент benchmark_probe вернул: \"BENCH_MARKER_STREAMABLE=orchid-17\".",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "policy_then_recall",
+      "description": "MCP-факт → вспоминание без повторного вызова",
+      "tags": [
+        "critical",
+        "tool",
+        "instruction"
+      ],
+      "passed": false,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": false,
+          "tags": [
+            "critical",
+            "tool",
+            "instruction"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови get_policy_fact и кратко перескажи правило и секрет из результата.",
+              "answer": "Согласно результату, правило гласит, что каждый ответ ассистента должен заканчиваться тегом [POLICY_OK]. Секретный маркер политики — violet-42.\n\n[POLICY_OK]",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.8610867920797318,
+              "prompt_tokens": 2853,
+              "completion_tokens": 64,
+              "total_tokens": 2917
+            },
+            {
+              "turn_index": 1,
+              "user": "Какой был секретный факт политики? Ответь без вызова инструментов.",
+              "answer": "Секретный факт политики — violet-42.",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": false,
+              "failures": [
+                "запрещённый инструмент 'get_policy_fact' был вызван"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 6,
+              "latency_sec": 0.3192458339035511,
+              "prompt_tokens": 4381,
+              "completion_tokens": 79,
+              "total_tokens": 4460
+            },
+            {
+              "turn_index": 2,
+              "user": "Повтори правило форматирования ответов из политики.",
+              "answer": "Правило гласит, что каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 8,
+              "latency_sec": 0.472069124924019,
+              "prompt_tokens": 5943,
+              "completion_tokens": 105,
+              "total_tokens": 6048
+            }
+          ],
+          "duration_sec": 1.77
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "tags": [
+            "critical",
+            "tool",
+            "instruction"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови get_policy_fact и кратко перескажи правило и секрет из результата.",
+              "answer": "Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].\nСекрет: violet-42.",
+              "tool_calls": [
+                "get_policy_fact"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "get_policy_fact",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.6967275408096611,
+              "prompt_tokens": 933,
+              "completion_tokens": 47,
+              "total_tokens": 980
+            },
+            {
+              "turn_index": 1,
+              "user": "Какой был секретный факт политики? Ответь без вызова инструментов.",
+              "answer": "Секретный факт политики: violet-42.",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 6,
+              "latency_sec": 0.2979131250176579,
+              "prompt_tokens": 551,
+              "completion_tokens": 15,
+              "total_tokens": 566
+            },
+            {
+              "turn_index": 2,
+              "user": "Повтори правило форматирования ответов из политики.",
+              "answer": "Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 8,
+              "latency_sec": 0.6562059170100838,
+              "prompt_tokens": 585,
+              "completion_tokens": 22,
+              "total_tokens": 607
+            }
+          ],
+          "duration_sec": 1.76
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.529,
+          "passed": true,
+          "answer_a_preview": "Согласно результату, правило гласит, что каждый ответ ассистента должен заканчиваться тегом [POLICY_OK]. Секретный маркер политики — violet-42.\n\n[POLICY_OK]",
+          "answer_b_preview": "Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].\nСекрет: violet-42.",
+          "turn_index": 0
+        },
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "Секретный факт политики — violet-42.",
+          "answer_b_preview": "Секретный факт политики: violet-42.",
+          "turn_index": 1
+        },
+        {
+          "similarity": 0.8,
+          "passed": true,
+          "answer_a_preview": "Правило гласит, что каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+          "answer_b_preview": "Правило: каждый ответ ассистента должен заканчиваться тегом [POLICY_OK].",
+          "turn_index": 2
+        }
+      ]
+    },
+    {
+      "id": "mcp_python_then_context",
+      "description": "MCP lookup + опора на историю",
+      "tags": [
+        "tool",
+        "instruction"
+      ],
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "tags": [
+            "tool",
+            "instruction"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови python_doc_lookup с topic='decorators' и процитируй REF из ответа.",
+              "answer": "REF: PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "decorators"
+                  }
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.6504357499070466,
+              "prompt_tokens": 2862,
+              "completion_tokens": 37,
+              "total_tokens": 2899
+            },
+            {
+              "turn_index": 1,
+              "user": "Ок, понял.",
+              "answer": "Если будут ещё вопросы — обращайся!",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "decorators"
+                  }
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 6,
+              "latency_sec": 0.30420012515969574,
+              "prompt_tokens": 4344,
+              "completion_tokens": 46,
+              "total_tokens": 4390
+            },
+            {
+              "turn_index": 2,
+              "user": "Кстати, а про классы?",
+              "answer": "Python topic='classes': используй def для функций. REF=PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup",
+                "python_doc_lookup"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "decorators"
+                  }
+                },
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "classes"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 10,
+              "latency_sec": 0.7765803749207407,
+              "prompt_tokens": 7424,
+              "completion_tokens": 94,
+              "total_tokens": 7518
+            },
+            {
+              "turn_index": 3,
+              "user": "Какой REF код ты получил от инструмента про decorators?",
+              "answer": "REF код, который я получил от инструмента про decorators: PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup",
+                "python_doc_lookup"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "decorators"
+                  }
+                },
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "classes"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 12,
+              "latency_sec": 0.5293066659942269,
+              "prompt_tokens": 9034,
+              "completion_tokens": 114,
+              "total_tokens": 9148
+            }
+          ],
+          "duration_sec": 2.41
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "tags": [
+            "tool",
+            "instruction"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови python_doc_lookup с topic='decorators' и процитируй REF из ответа.",
+              "answer": "REF=PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "decorators"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 0.6324548330157995,
+              "prompt_tokens": 942,
+              "completion_tokens": 37,
+              "total_tokens": 979
+            },
+            {
+              "turn_index": 1,
+              "user": "Ок, понял.",
+              "answer": "Если у вас есть еще вопросы, я готов помочь!",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 6,
+              "latency_sec": 0.3657473330385983,
+              "prompt_tokens": 522,
+              "completion_tokens": 12,
+              "total_tokens": 534
+            },
+            {
+              "turn_index": 2,
+              "user": "Кстати, а про классы?",
+              "answer": "REF=PYDOC-778",
+              "tool_calls": [
+                "python_doc_lookup"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "python_doc_lookup",
+                  "arguments": {
+                    "topic": "classes"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 10,
+              "latency_sec": 0.7301617909688503,
+              "prompt_tokens": 1166,
+              "completion_tokens": 37,
+              "total_tokens": 1203
+            },
+            {
+              "turn_index": 3,
+              "user": "Какой REF код ты получил от инструмента про decorators?",
+              "answer": "REF код, который я получил от инструмента про decorators, это PYDOC-778.",
+              "tool_calls": [],
+              "tool_call_details": [],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 12,
+              "latency_sec": 0.37994374986737967,
+              "prompt_tokens": 642,
+              "completion_tokens": 22,
+              "total_tokens": 664
+            }
+          ],
+          "duration_sec": 2.29
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "REF: PYDOC-778",
+          "answer_b_preview": "REF=PYDOC-778",
+          "turn_index": 0
+        },
+        {
+          "similarity": 0.2,
+          "passed": false,
+          "answer_a_preview": "Если будут ещё вопросы — обращайся!",
+          "answer_b_preview": "Если у вас есть еще вопросы, я готов помочь!",
+          "turn_index": 1
+        },
+        {
+          "similarity": 0.3,
+          "passed": false,
+          "answer_a_preview": "Python topic='classes': используй def для функций. REF=PYDOC-778",
+          "answer_b_preview": "REF=PYDOC-778",
+          "turn_index": 2
+        },
+        {
+          "similarity": 0.9,
+          "passed": true,
+          "answer_a_preview": "REF код, который я получил от инструмента про decorators: PYDOC-778",
+          "answer_b_preview": "REF код, который я получил от инструмента про decorators, это PYDOC-778.",
+          "turn_index": 3
+        }
+      ]
+    },
+    {
+      "id": "sse_transport",
+      "description": "SSE MCP",
+      "tags": [
+        "tool"
+      ],
+      "passed": true,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": true,
+          "tags": [
+            "tool"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови benchmark_sse_probe и напиши маркер из ответа.",
+              "answer": "Маркер из ответа: `BENCH_MARKER_SSE=amber-91`",
+              "tool_calls": [
+                "benchmark_sse_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_sse_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 1.4508763330522925,
+              "prompt_tokens": 2922,
+              "completion_tokens": 35,
+              "total_tokens": 2957
+            }
+          ],
+          "duration_sec": 1.73
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": true,
+          "tags": [
+            "tool"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови benchmark_sse_probe и напиши маркер из ответа.",
+              "answer": "Маркер из ответа: BENCH_MARKER_SSE=amber-91",
+              "tool_calls": [
+                "benchmark_sse_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_sse_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "passed": true,
+              "failures": [],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 1.7825903329066932,
+              "prompt_tokens": 1022,
+              "completion_tokens": 33,
+              "total_tokens": 1055
+            }
+          ],
+          "duration_sec": 2.22
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "Маркер из ответа: `BENCH_MARKER_SSE=amber-91`",
+          "answer_b_preview": "Маркер из ответа: BENCH_MARKER_SSE=amber-91",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "random_marker_anti_hallucination",
+      "description": "Маркер только через random_marker_probe",
+      "tags": [
+        "tool",
+        "r_nta"
+      ],
+      "passed": false,
+      "backends": {
+        "langchain": {
+          "backend": "langchain",
+          "passed": false,
+          "tags": [
+            "tool",
+            "r_nta"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови random_marker_probe и напиши RANDOM_MARKER из ответа дословно.",
+              "answer": "RANDOM_MARKER: orchid-17",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 1,
+              "mcp_delta": 0,
+              "passed": false,
+              "failures": [
+                "нет подстроки ['RANDOM_MARKER=']",
+                "инструмент 'random_marker_probe' не вызван в этом ходе",
+                "MCP delta 0 < ожидаемого 1"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 1.0422480418346822,
+              "prompt_tokens": 2833,
+              "completion_tokens": 24,
+              "total_tokens": 2857
+            }
+          ],
+          "duration_sec": 1.96
+        },
+        "basic_loop": {
+          "backend": "basic_loop",
+          "passed": false,
+          "tags": [
+            "tool",
+            "r_nta"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Вызови random_marker_probe и напиши RANDOM_MARKER из ответа дословно.",
+              "answer": "RANDOM_MARKER=BENCH_MARKER_STREAMABLE=orchid-17",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 0,
+              "passed": false,
+              "failures": [
+                "инструмент 'random_marker_probe' не вызван в этом ходе",
+                "MCP delta 0 < ожидаемого 1"
+              ],
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "history_length": 4,
+              "latency_sec": 1.54776466707699,
+              "prompt_tokens": 913,
+              "completion_tokens": 29,
+              "total_tokens": 942
+            }
+          ],
+          "duration_sec": 1.6
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.667,
+          "passed": true,
+          "answer_a_preview": "RANDOM_MARKER: orchid-17",
+          "answer_b_preview": "RANDOM_MARKER=BENCH_MARKER_STREAMABLE=orchid-17",
+          "turn_index": 0
+        }
+      ]
+    }
+  ],
+  "finished_at": "2026-06-29T16:18:12.817753+00:00",
+  "all_passed": false,
+  "scorecard": {
+    "per_backend": {
+      "langchain": {
+        "backend": "langchain",
+        "solve_rate": 0.5714,
+        "agent_accuracy_pct": 83.33,
+        "r_nta": 0.0,
+        "r_dt": 0.0,
+        "scenarios_passed": 8,
+        "scenarios_total": 14,
+        "turns_passed": 30,
+        "turns_graded": 36,
+        "total_tokens": 311523,
+        "total_prompt_tokens": 300884,
+        "total_completion_tokens": 10639,
+        "total_latency_sec": 35.78,
+        "avg_tokens_per_turn": 8653.4
+      },
+      "basic_loop": {
+        "backend": "basic_loop",
+        "solve_rate": 0.6429,
+        "agent_accuracy_pct": 86.11,
+        "r_nta": 0.0,
+        "r_dt": 0.0,
+        "scenarios_passed": 9,
+        "scenarios_total": 14,
+        "turns_passed": 31,
+        "turns_graded": 36,
+        "total_tokens": 34579,
+        "total_prompt_tokens": 32811,
+        "total_completion_tokens": 1768,
+        "total_latency_sec": 28.61,
+        "avg_tokens_per_turn": 960.5
+      }
+    },
+    "aggregate": {},
+    "comparative": {}
+  },
+  "baseline_diff": {
+    "status": "no_baseline"
+  }
+}

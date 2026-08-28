@@ -1,0 +1,268 @@
+scenarios:
+- id: s05_001
+  description: HR-менеджер ищет профиль нового коллеги Dmitry Orlov перед онбордингом
+  tags:
+  - catalog
+  - smoke
+  turns:
+  - user: Завтра выходит новый сотрудник Dmitry Orlov — найди его профиль в системе,
+      мне нужно подготовиться к онбордингу
+    expect_contains:
+    - EMP_ID=
+    - NAME=Dmitry Orlov
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Dmitry Orlov
+- id: s05_002
+  description: 'r_dt: CEO просит найти сотрудника — правильный employee_lookup, не
+    decoy_employee_search'
+  tags:
+  - catalog
+  - r_dt
+  turns:
+  - user: Найди сотрудника Sarah Mitchell в нашей системе
+    expect_contains:
+    - EMP_ID=
+    - DEPT=
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Sarah Mitchell
+- id: s05_003
+  description: 'Профиль + recall: найти Maria Chen, затем уточнить её DEPT без повторного
+    вызова'
+  tags:
+  - catalog
+  - instruction
+  turns:
+  - user: Найди в системе профиль Maria Chen
+    expect_contains:
+    - EMP_ID=
+    - DEPT=
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Maria Chen
+  - user: А напомни — в каком отделе работает Maria Chen? Мы же только что смотрели
+      её профиль
+    expect_contains:
+    - DEPT=
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+- id: s05_004
+  description: Сотрудник спрашивает остаток своего отпуска по известному emp_id HR-B3C4D5
+  tags:
+  - catalog
+  turns:
+  - user: Мой ID сотрудника HR-B3C4D5 — сколько дней отпуска у меня осталось?
+    expect_contains:
+    - LEAVE_DAYS=
+    - emp_id=HR-B3C4D5
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      emp_id: HR-B3C4D5
+- id: s05_005
+  description: 'Цепочка: employee_lookup для James Park → leave_balance с emp_id из
+    ответа'
+  tags:
+  - catalog
+  turns:
+  - user: Найди сотрудника James Park в системе
+    expect_contains:
+    - EMP_ID=
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: James Park
+  - user: Отлично. Теперь проверь, сколько дней отпуска у него осталось
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+- id: s05_006
+  description: 'r_dt + отпуск: проверить баланс отпуска — правильный leave_balance
+    с expect_tool_args'
+  tags:
+  - catalog
+  - r_dt
+  turns:
+  - user: Сколько дней отпуска осталось у сотрудника HR-F7G8H9?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      emp_id: HR-F7G8H9
+- id: s05_007
+  description: Оргструктура отдела Marketing — org_chart_dept
+  tags:
+  - catalog
+  turns:
+  - user: 'Расскажи про отдел Marketing — кто там работает и кто главный?'
+    expect_contains:
+    - DEPT=Marketing
+    - ROLES=
+    - HEAD=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Marketing
+- id: s05_008
+  description: 'Оргструктура + recall: Engineering → кто HEAD? — ответить из памяти
+    без повторного вызова'
+  tags:
+  - catalog
+  - instruction
+  turns:
+  - user: Покажи структуру отдела Engineering — кто там работает и кто руководит
+    expect_contains:
+    - DEPT=Engineering
+    - HEAD=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Engineering
+  - user: А кто у них руководитель? Мы же только что смотрели оргструктуру
+    expect_contains:
+    - HEAD=
+    max_tool_calls_delta: 0
+    forbid_tool_called: org_chart_dept
+- id: s05_009
+  description: 'r_dt: запрос на команду — org_chart_dept, не decoy_employee_search'
+  tags:
+  - catalog
+  - r_dt
+  turns:
+  - user: Найди команду отдела Finance — кто там работает и кто главный?
+    expect_contains:
+    - DEPT=Finance
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Finance
+- id: s05_010
+  description: '3 хода подряд: employee_lookup → org_chart_dept → leave_balance'
+  tags:
+  - catalog
+  turns:
+  - user: Найди профиль сотрудника Elena Vasquez
+    expect_contains:
+    - EMP_ID=
+    - DEPT=
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Elena Vasquez
+  - user: Покажи структуру её отдела
+    expect_contains:
+    - ROLES=
+    - HEAD=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+  - user: И сколько у неё дней отпуска осталось?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+- id: s05_011
+  description: 'Онбординг 4 хода: профиль → отпуск → оргструктура → финальный summary
+    без tool'
+  tags:
+  - catalog
+  - long_horizon
+  - critical
+  turns:
+  - user: Готовлю онбординг для нового сотрудника Alex Turner — найди его профиль
+    expect_contains:
+    - EMP_ID=
+    - DEPT=
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Alex Turner
+  - user: Сколько дней отпуска у Alex осталось?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Покажи структуру отдела, в который он выходит
+    expect_contains:
+    - ROLES=
+    - HEAD=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+  - user: 'Отлично, собери короткий онбординг-дайджест по Alex Turner: роль, отдел,
+      руководитель и сколько у него отпуска'
+    expect_contains:
+    - Alex Turner
+    expect_regex:
+    - (DEPT=|отдел)
+    - (LEAVE_DAYS=|отпуск)
+    - (HEAD=|руководит)
+    max_tool_calls_delta: 0
+    forbid_tools_called: [employee_lookup, leave_balance, org_chart_dept]
+- id: s05_012
+  description: 'r_dt 2 хода: employee_lookup (не decoy) → recall имени сотрудника
+    из памяти'
+  tags:
+  - catalog
+  - r_dt
+  - instruction
+  turns:
+  - user: Найди в базе сотрудника Kevin Brooks
+    expect_contains:
+    - EMP_ID=
+    - NAME=Kevin Brooks
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Kevin Brooks
+  - user: Как его зовут? Мы же только что нашли его в базе
+    expect_contains:
+    - Kevin Brooks
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+- id: s05_013
+  description: 'Менеджер ищет замену на период отпуска: org_chart двух отделов за
+    2 хода'
+  tags:
+  - catalog
+  turns:
+  - user: Мне нужна замена на время отпуска ключевого инженера. Покажи структуру отдела
+      Engineering
+    expect_contains:
+    - DEPT=Engineering
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Engineering
+  - user: Теперь покажи Product — возможно найдём замену там
+    expect_contains:
+    - DEPT=Product
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Product
+- id: s05_014
+  description: 'smoke: быстрая проверка employee_lookup для Anna Kim'
+  tags:
+  - catalog
+  - smoke
+  turns:
+  - user: Быстро найди сотрудника Anna Kim
+    expect_contains:
+    - EMP_ID=
+    - NAME=Anna Kim
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Anna Kim

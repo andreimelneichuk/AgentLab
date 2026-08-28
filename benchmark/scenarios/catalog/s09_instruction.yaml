@@ -1,0 +1,245 @@
+scenarios:
+
+  # ─────────────────────────────────────────────
+  # S09 — Следование инструкциям и долгосрочная память
+  # Проверяет: удержание правила N ходов, recall без tool,
+  # смену правила, запрет слов, комбо tool + instruction.
+  # ─────────────────────────────────────────────
+
+  - id: s09_001
+    description: "Формат ответа: каждый ответ заканчивается словом DELTA — 5 ходов"
+    tags: [catalog, instruction]
+    turns:
+      - user: "Давай на всю беседу одну договорённость: каждый твой ответ пусть заканчивается словом DELTA. Ок?"
+        expect_contains: ["DELTA"]
+      - user: "Кстати, а что такое DNS — коротко объясни"
+        expect_regex: ['DELTA$']
+      - user: "Назови три любых языка программирования"
+        expect_regex: ['DELTA$']
+      - user: "Столица Франции какая?"
+        expect_regex: ['DELTA$']
+      - user: "Ты всё ещё держишь в голове правило из самого начала?"
+        expect_contains: ["DELTA"]
+        max_tool_calls_delta: 0
+
+  - id: s09_002
+    description: "Префикс [ASSIST]: каждый ответ начинается с [ASSIST] — 4 хода"
+    tags: [catalog, instruction]
+    turns:
+      - user: "С этого момента каждый ответ начинай с '[ASSIST]'. Ок? Подтверди."
+        expect_contains: ["[ASSIST]"]
+      - user: "Что такое REST API, простыми словами?"
+        expect_regex: ['^\[ASSIST\]']
+      - user: "А почему небо синее?"
+        expect_regex: ['^\[ASSIST\]']
+      - user: "Какое правило ты сейчас соблюдаешь в нашем чате?"
+        expect_contains: ["[ASSIST]"]
+        max_tool_calls_delta: 0
+
+  - id: s09_003
+    description: "Счётчик Reply #N: каждый ответ содержит порядковый номер реплики — 4 хода"
+    tags: [catalog, instruction]
+    turns:
+      - user: "Запомни: в каждом ответе пиши номер реплики как 'Reply #N'. С первого — Reply #1."
+        expect_contains: ["Reply #1"]
+      - user: "Что такое Kubernetes?"
+        expect_contains: ["Reply #2"]
+      - user: "Назови три континента"
+        expect_contains: ["Reply #3"]
+      - user: "А RAM — это что?"
+        expect_contains: ["Reply #4"]
+        max_tool_calls_delta: 0
+
+  - id: s09_004
+    description: "Язык English: отвечать только по-английски весь диалог — 3 хода + проверка"
+    tags: [catalog, instruction]
+    turns:
+      - user: "From now on, answer only in English for the rest of this conversation. Just confirm you got it."
+        expect_contains: ["English"]
+      - user: "Что такое блокчейн?"
+        expect_contains: ["blockchain"]
+        max_tool_calls_delta: 0
+      - user: "Расскажи про Python в двух словах"
+        expect_contains: ["Python", "language"]
+        max_tool_calls_delta: 0
+      - user: "На каком языке ты мне отвечаешь в этом диалоге?"
+        expect_contains: ["English"]
+        max_tool_calls_delta: 0
+
+  - id: s09_005
+    description: "Краткость: каждый ответ не длиннее одного предложения — 4 хода, только expect_contains"
+    tags: [catalog, instruction]
+    turns:
+      - user: "Правило: отвечай не длиннее одного предложения. Подтверди, что принял."
+        expect_contains: ["предложени"]
+      - user: "Столица Японии?"
+        expect_contains: ["Токио"]
+      - user: "А Германии?"
+        expect_contains: ["Берлин"]
+      - user: "Каким правилом ты сейчас руководствуешься?"
+        expect_contains: ["предложени"]
+        max_tool_calls_delta: 0
+
+  - id: s09_006
+    description: "JSON-тег: каждый ответ содержит {\"status\": \"ok\"} — 3 хода"
+    tags: [catalog, instruction]
+    turns:
+      - user: 'Ок, новое правило: в каждом ответе должен быть JSON-тег {"status": "ok"}. Подтверди.'
+        expect_contains: ['{"status": "ok"}']
+      - user: "Что такое Docker?"
+        expect_contains: ['{"status": "ok"}']
+      - user: "Назови любую знаменитую картину"
+        expect_contains: ['{"status": "ok"}']
+        max_tool_calls_delta: 0
+
+  - id: s09_007
+    description: "Запрет слова 'нет': только 'не могу' или 'недоступно' — 3 хода с forbid_contains"
+    tags: [catalog, instruction]
+    turns:
+      - user: "Важно: слово 'нет' в ответах не используй — вместо него говори 'не могу' или 'недоступно'. Понял?"
+        expect_regex: ["(принял|понял|запомнил|буду использовать)"]
+      - user: "Ты умеешь летать?"
+        forbid_contains: ["нет"]
+        expect_regex: ["(не могу|недоступно)"]
+      - user: "А усталость чувствуешь?"
+        forbid_contains: ["нет"]
+        expect_regex: ["(не могу|недоступно)"]
+
+  - id: s09_008
+    description: "Символ ✓ в каждом ответе как знак подтверждения — 4 хода"
+    tags: [catalog, instruction]
+    turns:
+      - user: "Договорились: в каждом ответе ставь символ '✓' как подтверждение. Подтверди правило."
+        expect_contains: ["✓"]
+      - user: "Как называется главный компонент процессора?"
+        expect_contains: ["✓"]
+      - user: "Что делает break в Python?"
+        expect_contains: ["✓"]
+      - user: "Помнишь правило, с которого мы начали?"
+        expect_contains: ["✓"]
+        max_tool_calls_delta: 0
+
+  - id: s09_009
+    description: "MCP + правило [POLICY_OK]: установить правило → get_policy_fact → recall без tool — smoke"
+    tags: [catalog, instruction, tool, smoke]
+    turns:
+      - user: "Правило на диалог: каждый ответ заканчивается маркером [POLICY_OK]. Подтверди."
+        expect_contains: ["[POLICY_OK]"]
+      - user: "Глянь в системе актуальный факт политики безопасности и скажи его в ответе"
+        expect_contains: ["violet-42", "[POLICY_OK]"]
+        expect_tool_called: get_policy_fact
+        forbid_tool_called: decoy_policy_fact
+        min_tool_calls_delta: 1
+      - user: "А теперь тот факт политики — мы же только что его смотрели"
+        expect_contains: ["violet-42", "[POLICY_OK]"]
+        max_tool_calls_delta: 0
+
+  - id: s09_010
+    description: "Recall: запомнить 3 числа-метки → ответить на 3 вопроса из памяти без tool"
+    tags: [catalog, instruction]
+    turns:
+      - user: "Запиши у себя три числа: ALPHA=7741, BETA=2208, GAMMA=9963. Скажи, что запомнил."
+        expect_contains: ["ALPHA", "BETA", "GAMMA"]
+      - user: "Какое значение у BETA?"
+        expect_contains: ["2208"]
+        max_tool_calls_delta: 0
+      - user: "Ок, а GAMMA?"
+        expect_contains: ["9963"]
+        max_tool_calls_delta: 0
+      - user: "И напоследок — ALPHA?"
+        expect_contains: ["7741"]
+        max_tool_calls_delta: 0
+
+  - id: s09_011
+    description: "Стресс-recall: 6 фактов через MCP tools → финальный квиз на 3 факта без tool — critical"
+    tags: [catalog, instruction, tool, critical]
+    turns:
+      - user: "Первое: сделай пробный запрос к основному endpoint и запомни маркер из ответа"
+        expect_contains: ["orchid-17"]
+        expect_tool_called: benchmark_probe
+        min_tool_calls_delta: 1
+      - user: "Второе: достань факт политики безопасности из системы и запомни"
+        expect_contains: ["violet-42"]
+        expect_tool_called: get_policy_fact
+        forbid_tool_called: decoy_policy_fact
+        min_tool_calls_delta: 1
+      - user: "Третье: посчитай 47*89 и запомни результат"
+        expect_contains: ["4183"]
+        expect_tool_called: calc_expression
+        expect_tool_args: {expression: "47*89"}
+        min_tool_calls_delta: 1
+      - user: "Четвёртое: сколько будет 128+256? Тоже запомни"
+        expect_contains: ["384"]
+        expect_tool_called: calc_expression
+        expect_tool_args: {expression: "128+256"}
+        min_tool_calls_delta: 1
+      - user: "Пятое: перемножь 17 и 53, результат держи в голове"
+        expect_contains: ["901"]
+        expect_tool_called: calc_expression
+        expect_tool_args: {expression: "17*53"}
+        min_tool_calls_delta: 1
+      - user: "Шестое: вычти 58 из 1000 и запомни ответ"
+        expect_contains: ["942"]
+        expect_tool_called: calc_expression
+        expect_tool_args: {expression: "1000-58"}
+        min_tool_calls_delta: 1
+      - user: "Какой маркер был в самом первом запросе в этой беседе?"
+        expect_contains: ["orchid-17"]
+        max_tool_calls_delta: 0
+      - user: "Какой факт политики мы тогда получили?"
+        expect_contains: ["violet-42"]
+        max_tool_calls_delta: 0
+      - user: "И чему равно 47 умножить на 89?"
+        expect_contains: ["4183"]
+        max_tool_calls_delta: 0
+
+  - id: s09_012
+    description: "Смена правила: RULE_A → 2 хода → RULE_B → 2 хода с новым → финал"
+    tags: [catalog, instruction]
+    turns:
+      - user: "Правило A: каждый ответ начинай с 'RULE_A:'. Подтверди."
+        expect_regex: ['^RULE_A:']
+      - user: "Что такое виртуальная машина?"
+        expect_regex: ['^RULE_A:']
+      - user: "Стоп, меняем правило. Теперь каждый ответ с 'RULE_B:', RULE_A больше не действует. Подтверди."
+        expect_regex: ['^RULE_B:']
+      - user: "А контейнер — это что?"
+        expect_regex: ['^RULE_B:']
+      - user: "Какое правило сейчас в силе?"
+        expect_regex: ['^RULE_B:']
+        max_tool_calls_delta: 0
+
+  - id: s09_013
+    description: "Пространственная память: описать 4 объекта → 2 хода-дистрактора → вспомнить 2 локации без tool"
+    tags: [catalog, instruction]
+    turns:
+      - user: "Запомни, где что лежит: Сервер-А — стойка-1, Роутер-Б — стойка-2, Коммутатор-В — шкаф-3, ИБП-Г — под столом. Ок?"
+        expect_contains: ["Сервер-А", "стойка-1"]
+      - user: "Кстати, что такое OSPF?"
+        expect_contains_mode: any
+        expect_contains: ["OSPF", "маршрут", "routing", "протокол"]
+        max_tool_calls_delta: 0
+      - user: "Сколько уровней в модели OSI?"
+        expect_contains: ["7"]
+        max_tool_calls_delta: 0
+      - user: "Где у нас Роутер-Б?"
+        expect_contains: ["стойка-2"]
+        max_tool_calls_delta: 0
+      - user: "А ИБП-Г?"
+        expect_contains: ["под столом"]
+        max_tool_calls_delta: 0
+
+  - id: s09_014
+    description: "Контекстный запрет имени клиента: установить правило → customer_get → ответ без имени — critical"
+    tags: [catalog, instruction, tool, critical]
+    turns:
+      - user: "Важное правило: имя клиента в ответах не называй — только его ID. Понял?"
+        expect_regex: ["(правило|ID|идентификатор)"]
+      - user: "Вытащи из CRM данные по клиенту CUST-4471"
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        expect_contains: ["CUST-4471"]
+      - user: "Кратко резюмируй этого клиента: ID, тариф и регион — без имён, только то, что реально есть в карточке"
+        expect_contains: ["CUST-4471"]
+        forbid_contains: ["Виктор", "Соколов", "Иванов", "Петров"]
+        max_tool_calls_delta: 0

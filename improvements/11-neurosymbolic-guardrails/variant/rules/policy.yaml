@@ -1,0 +1,43 @@
+# Политика и запрет decoy-инструментов (версионируется отдельно от промпта)
+version: "2.0.0"
+domain: policy
+
+pre_tool:
+  - id: deny_decoy_tools
+    type: deny_name_prefix
+    prefix: decoy_
+    message: "Инструмент '{tool}' запрещён политикой (decoy). Используйте официальный API."
+
+post_response:
+  - id: policy_ok_requires_fact
+    type: require_tool_before_marker
+    marker: "[POLICY_OK]"
+    required_tool: get_policy_fact
+    message: >-
+      Маркер [POLICY_OK] допустим только после успешного вызова get_policy_fact
+      в этом ходе. Сначала получите факт политики.
+
+  - id: no_false_success_after_tool_error
+    type: no_success_on_tool_error
+    success_patterns:
+      - успешно
+      - готово
+      - выполнено
+      - создан
+      - завершено
+      - SUCCESS
+    message: >-
+      Нельзя сообщать об успехе: предыдущий вызов инструмента завершился ошибкой.
+
+  # v2 доп.: анти-галлюцинация для marker-подобных значений (violet-42,
+  # orchid-17, amber-91, ...). Ловит и случайную галлюцинацию, и
+  # adversarial-инъекцию поддельных кодов (ORANGE-99, phantom-77,
+  # shadow-fox-42 из adversarial-тестов каталога) — если маркер упомянут в
+  # финальном ответе, но НИКАКОЙ tool в этой сессии его не вернул, это
+  # либо выдумка, либо принятая инъекция. Регистронезависимо (marker_seen).
+  - id: no_untraceable_markers
+    type: require_marker_traceable
+    pattern: '\b[a-zA-Z]+-\d{1,4}\b'
+    message: >-
+      Маркер '{marker}' упомянут в ответе, но не получен ни одним
+      инструментом в этой сессии — возможна галлюцинация или инъекция.

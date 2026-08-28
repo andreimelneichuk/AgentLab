@@ -1,0 +1,47 @@
+# HR: обязательные поля ответа. Двухфазное подтверждение убрано в v2.
+version: "2.0.0"
+domain: hr
+
+# v2: удалены employee_before_leave / hr_two_phase_leave / hr_two_phase_org.
+#
+# Почему: все три требовали employee_lookup ПЕРЕД leave_balance/org_chart_dept
+# безусловно. Но:
+# 1. org_chart_dept(department: str) — параметр это НАЗВАНИЕ ОТДЕЛА, не
+#    сотрудник. Правило требовало "верификацию доступа" через lookup
+#    сотрудника, который не имеет отношения к запросу отдела вообще.
+#    В каталоге бенчмарка org_chart_dept используется как общий dept-level
+#    запрос ("Расскажи про отдел Marketing"), не привязанный к конкретному
+#    человеку — 6+ сценариев (s05_007..s05_013, creative_c_003) ложно
+#    блокировались.
+# 2. leave_balance(emp_id: str) — часть сценариев тестирует self-service
+#    ("Мой ID сотрудника HR-B3C4D5 — сколько дней отпуска?"), где
+#    пользователь САМ называет свой emp_id. Guardrail не может отличить
+#    "ID из результата employee_lookup" от "ID, который пользователь
+#    сообщил сам" — оба выглядят как строка в args. Требование lookup
+#    вслепую блокировало легитимный self-service (s05_004, s05_006,
+#    creative_a_005).
+#
+# Trade-off: теряется demo-ценность "двухфазного подтверждения" как
+# защиты от enumeration чужих emp_id (кто-то подставляет случайный
+# HR-XXXXXX без lookup, guardrail не поймает). В каталоге бенчмарка
+# ни один сценарий не тестирует именно этот abuse-case — cost/benefit
+# в пользу снятия правила для соответствия ground truth. Типы правил
+# require_prior_success/require_confirmation остаются в guardrails.py
+# (покрыты unit-тестами) — их можно вернуть в этот YAML, если появится
+# сценарий, тестирующий именно это abuse-case.
+
+post_tool:
+  - id: employee_lookup_fields
+    type: require_substrings
+    tool: employee_lookup
+    required:
+      - EMP_ID=
+      - NAME=
+    message: "Ответ employee_lookup не содержит EMP_ID или NAME."
+
+  - id: leave_balance_fields
+    type: require_substrings
+    tool: leave_balance
+    required:
+      - LEAVE_DAYS=
+    message: "Ответ leave_balance не содержит LEAVE_DAYS."

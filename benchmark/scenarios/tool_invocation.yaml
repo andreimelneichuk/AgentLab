@@ -1,0 +1,66 @@
+# Tool invocation scenarios
+scenarios:
+  - id: mcp_marker_basic
+    tags: [critical, tool]
+    description: "Вызов MCP и маркер в ответе"
+    turns:
+      - user: "Сервис отвечает? Нужен какой-нибудь маркер из диагностики."
+        expect_contains: ["orchid-17", "BENCH_MARKER_STREAMABLE"]
+        expect_tool_called: benchmark_probe
+        min_tool_calls_delta: 1
+
+  - id: policy_then_recall
+    tags: [critical, tool, instruction]
+    description: "MCP-факт → вспоминание без повторного вызова"
+    turns:
+      - user: "Подтяни актуальную политику безопасности — интересует и секрет, и правило про формат ответов."
+        expect_contains_mode: any
+        expect_contains: ["violet-42", "POLICY_OK"]
+        expect_tool_called: get_policy_fact
+      - user: "А что там было за кодовое слово? Мы же только что смотрели."
+        expect_contains: ["violet-42"]
+        forbid_contains: ["не знаю", "не помню"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: get_policy_fact
+      - user: "И напомни про тот тег в конце ответов — как его писать?"
+        expect_contains: ["POLICY_OK"]
+        max_tool_calls_delta: 0
+
+  - id: mcp_python_then_context
+    tags: [tool, instruction]
+    description: "MCP lookup + опора на историю"
+    turns:
+      - user: "Покопайся в доке Python по теме decorators — нужен REF из справки."
+        expect_contains: ["PYDOC-778"]
+        expect_tool_called: python_doc_lookup
+        expect_tool_args:
+          topic: decorators
+      - user: "Ок, понял. Можешь повторить REF?"
+        expect_contains: ["PYDOC-778"]
+        max_tool_calls_delta: 0
+      - user: "Кстати, а про классы?"
+        expect_contains_mode: any
+        expect_contains: ["класс", "class", "ООП", "OOP"]
+        max_tool_calls_delta: 0
+      - user: "Какой REF по decorators мы смотрели?"
+        expect_contains: ["PYDOC-778"]
+        forbid_contains: ["не помню"]
+        max_tool_calls_delta: 0
+
+  - id: sse_transport
+    tags: [tool]
+    description: "SSE MCP"
+    mcp_config: benchmark/mcp_sse.json
+    turns:
+      - user: "Проверь SSE-транспорт — нужен маркер из диагностического зонда."
+        expect_contains: ["amber-91", "BENCH_MARKER_SSE"]
+        expect_tool_called: benchmark_sse_probe
+
+  - id: random_marker_anti_hallucination
+    tags: [tool, r_nta]
+    description: "Случайный маркер только из probe"
+    turns:
+      - user: "Сгенерируй случайный контрольный маркер для теста — мне нужен именно тот, что вернёт система."
+        expect_contains: ["RANDOM_MARKER="]
+        expect_tool_called: random_marker_probe
+        min_tool_calls_delta: 1

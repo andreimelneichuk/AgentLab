@@ -1,0 +1,231 @@
+# Benchmark scenarios: catalog S06 — CRM (customer / ticket / sales quote)
+scenarios:
+  - id: s06_001
+    description: "Менеджер по продажам проверяет карточку клиента CUST-555 перед звонком"
+    tags: [catalog, s06, tier1, tool]
+    turns:
+      - user: "Через 10 минут звонок клиенту CUST-555 — открой его карточку, хочу освежить в памяти детали."
+        expect_contains: ["CUSTOMER=CUST-555", "TIER", "REGION"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-555
+
+  - id: s06_002
+    description: "r_dt: «посмотри клиента» — агент использует customer_get, не decoy_customer_lookup, с expect_tool_args"
+    tags: [catalog, s06, tier1, tool, r_dt]
+    turns:
+      - user: "Посмотри клиента CUST-210 — нужна актуальная информация."
+        expect_contains: ["CUSTOMER=CUST-210", "TIER"]
+        expect_tool_called: customer_get
+        forbid_tool_called: decoy_customer_lookup
+        forbid_contains: ["TIER=bronze"]
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-210
+
+  - id: s06_003
+    description: "Клиент + recall: загрузить карточку CUST-301, затем на следующем ходу назвать TIER без tool"
+    tags: [catalog, s06, tier2, tool, instruction]
+    turns:
+      - user: "Открой карточку клиента CUST-301 — хочу посмотреть все данные по нему."
+        expect_contains: ["CUSTOMER=CUST-301", "TIER"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-301
+      - user: "А какой у него тир? Мы же только что смотрели его карточку."
+        expect_contains: ["TIER"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: customer_get
+
+  - id: s06_004
+    description: "Техподдержка создаёт тикет 'Database connection timeout'"
+    tags: [catalog, s06, tier1, tool]
+    turns:
+      - user: "Создай тикет на проблему с базой данных — тема: Database connection timeout."
+        expect_contains: ["TICKET_ID=TK-", "status=open"]
+        expect_tool_called: ticket_create
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          subject: "Database connection timeout"
+
+  - id: s06_005
+    description: "Тикет + контекст: сначала customer_get CUST-410, потом ticket_create с customer_id из ответа"
+    tags: [catalog, s06, tier2, tool, instruction]
+    turns:
+      - user: "Открой карточку клиента CUST-410 — у него проблема, нужно зарегистрировать обращение."
+        expect_contains: ["CUSTOMER=CUST-410", "TIER"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-410
+      - user: "Отлично, теперь создай тикет 'Login page not loading' для этого клиента."
+        expect_contains: ["TICKET_ID=TK-", "status=open"]
+        expect_tool_called: ticket_create
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          subject: "Login page not loading"
+
+  - id: s06_006
+    description: "Менеджер запрашивает коммерческое предложение на Professional Plan"
+    tags: [catalog, s06, tier1, tool]
+    turns:
+      - user: "Мне нужно коммерческое предложение на Professional Plan — подготовь его."
+        expect_contains: ["QUOTE", "Professional Plan", "price"]
+        expect_tool_called: sales_quote
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          product: "Professional Plan"
+
+  - id: s06_007
+    description: "КП + expect_tool_args: цена на Enterprise Suite для сравнения"
+    tags: [catalog, s06, tier1, tool]
+    turns:
+      - user: "Клиент хочет сравнить варианты — сделай предложение на Enterprise Suite."
+        expect_contains: ["QUOTE", "Enterprise Suite", "price"]
+        expect_tool_called: sales_quote
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          product: "Enterprise Suite"
+
+  - id: s06_008
+    description: "r_dt 2 хода: customer_get (не decoy) для CUST-730 → уточнить NAME без повторного вызова"
+    tags: [catalog, s06, tier2, tool, r_dt, instruction]
+    turns:
+      - user: "Найди клиента CUST-730 — нужна актуальная информация по нему."
+        expect_contains: ["CUSTOMER=CUST-730", "TIER", "REGION"]
+        expect_tool_called: customer_get
+        forbid_tool_called: decoy_customer_lookup
+        forbid_contains: ["TIER=bronze"]
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-730
+      - user: "А из какого он региона?"
+        expect_contains: ["REGION"]
+        max_tool_calls_delta: 0
+        forbid_tools_called: [customer_get, decoy_customer_lookup]
+
+  - id: s06_009
+    description: "3 хода: customer_get → ticket_create → sales_quote — полный цикл работы с клиентом"
+    tags: [catalog, s06, tier2, tool, instruction]
+    turns:
+      - user: "Открой карточку клиента CUST-620."
+        expect_contains: ["CUSTOMER=CUST-620", "TIER"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-620
+      - user: "Зарегистрируй от него тикет с темой 'API rate limit exceeded'."
+        expect_contains: ["TICKET_ID=TK-", "status=open"]
+        expect_tool_called: ticket_create
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          subject: "API rate limit exceeded"
+      - user: "И сразу подготовь для него предложение на Professional Plan — возможно, это поможет решить проблему."
+        expect_contains: ["QUOTE", "Professional Plan", "price_usd"]
+        expect_tool_called: sales_quote
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          product: "Professional Plan"
+
+  - id: s06_010
+    description: "Обработка жалобы: customer_get CUST-800 → ticket 'Billing issue' → sales_quote на замену (3 хода)"
+    tags: [catalog, s06, tier2, tool, instruction, long_horizon]
+    turns:
+      - user: "Клиент CUST-800 звонит с жалобой — открой его карточку."
+        expect_contains: ["CUSTOMER=CUST-800", "TIER"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-800
+      - user: "Создай тикет 'Billing issue' для этого клиента."
+        expect_contains: ["TICKET_ID=TK-", "status=open"]
+        expect_tool_called: ticket_create
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          subject: "Billing issue"
+      - user: "Предложи ему альтернативный план — сделай КП на Starter Plan."
+        expect_contains: ["QUOTE", "Starter Plan", "price"]
+        expect_tool_called: sales_quote
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          product: "Starter Plan"
+
+  - id: s06_011
+    description: "Подготовка к митингу: загрузить 2 клиентов (CUST-100, CUST-200) за 2 хода → сравнить тиры без tool"
+    tags: [catalog, s06, tier2, tool, instruction, long_horizon]
+    turns:
+      - user: "Завтра встреча с двумя клиентами — сначала открой CUST-100."
+        expect_contains: ["CUSTOMER=CUST-100", "TIER"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-100
+      - user: "Теперь открой CUST-200."
+        expect_contains: ["CUSTOMER=CUST-200", "TIER"]
+        expect_tool_called: customer_get
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-200
+      - user: "Сравни их тиры — у кого выше?"
+        expect_contains: ["CUST-100", "CUST-200", "TIER"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: customer_get
+
+  - id: s06_012
+    description: "smoke: быстрая проверка карточки CUST-42"
+    tags: [catalog, s06, tier1, tool, smoke]
+    turns:
+      - user: "CUST-42 — быстро покажи карточку."
+        expect_contains: ["CUSTOMER=CUST-42", "TIER"]
+        expect_tool_called: customer_get
+        forbid_tool_called: decoy_customer_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-42
+
+  - id: s06_013
+    description: "r_dt: пользователь явно называет decoy_customer_lookup — агент всё равно использует правильный tool"
+    tags: [catalog, s06, tier1, tool, r_dt]
+    turns:
+      - user: "Поищи клиента CUST-999 через старый справочник — мне срочно нужна карточка."
+        expect_contains: ["CUSTOMER=CUST-999", "TIER", "REGION"]
+        expect_tool_called: customer_get
+        forbid_tool_called: decoy_customer_lookup
+        forbid_contains: ["TIER=bronze"]
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-999
+
+  - id: s06_014
+    description: "5 ходов: полная квалификация лида — customer_get → КП → тикет → recall всех данных → финал"
+    tags: [catalog, s06, tier3, tool, instruction, long_horizon, critical]
+    turns:
+      - user: "Начинаем квалификацию нового лида — открой карточку клиента CUST-360."
+        expect_contains: ["CUSTOMER=CUST-360", "TIER", "REGION"]
+        expect_tool_called: customer_get
+        forbid_tool_called: decoy_customer_lookup
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          customer_id: CUST-360
+      - user: "Хорошо. Подготовь для него коммерческое предложение на Business Plan."
+        expect_contains: ["QUOTE", "Business Plan", "price"]
+        expect_tool_called: sales_quote
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          product: "Business Plan"
+      - user: "Клиент заинтересован, но у него вопросы — создай тикет 'Onboarding assistance request'."
+        expect_contains: ["TICKET_ID=TK-", "status=open"]
+        expect_tool_called: ticket_create
+        min_tool_calls_delta: 1
+        expect_tool_args:
+          subject: "Onboarding assistance request"
+      - user: "Собери в один абзац всё, что мы узнали: кто клиент, его тир, что предложили и какой тикет открыли."
+        expect_contains: ["CUST-360", "TIER", "price_usd"]
+        max_tool_calls_delta: 0
+        forbid_tools_called: [customer_get, sales_quote, ticket_create]
+      - user: "Отлично. Подтверди финальный статус: лид квалифицирован, тикет открыт, КП отправлено."
+        expect_contains: ["CUST-360", "TK-"]
+        max_tool_calls_delta: 0
+        forbid_tools_called: [customer_get, sales_quote, ticket_create]

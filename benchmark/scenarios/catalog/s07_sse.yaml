@@ -1,0 +1,133 @@
+scenarios:
+
+  # ── s07_001 ─────────────────────────────────────────────────────────────────
+  # smoke: DevOps проверяет, что SSE-транспорт работает
+  - id: s07_001
+    tags: [catalog, sse, smoke]
+    turns:
+      - user: "Нужно убедиться, что SSE-транспорт живой и отвечает — проверь и скажи, что получилось."
+        expect_contains: ["amber-91"]
+        expect_tool_called: benchmark_sse_probe
+        min_tool_calls_delta: 1
+
+  # ── s07_002 ─────────────────────────────────────────────────────────────────
+  # Аудитор запрашивает лог событий за конкретную дату
+  - id: s07_002
+    tags: [catalog, sse, audit]
+    turns:
+      - user: "Я аудитор безопасности. Мне нужен полный журнал SSE-событий за 2024-01-15 для внутреннего расследования."
+        expect_contains: ["AUDIT date=", "2024-01-15"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+
+  # ── s07_003 ─────────────────────────────────────────────────────────────────
+  # r_dt: «получи данные из SSE» — агент берёт sse_audit_log, не decoy_sse_cache
+  - id: s07_003
+    tags: [catalog, sse, r_dt]
+    turns:
+      - user: "Нужны события SSE за 2024-02-10 — только актуальные, не устаревшие."
+        expect_contains: ["AUDIT date=", "2024-02-10"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_sse_cache
+
+  # ── s07_004 ─────────────────────────────────────────────────────────────────
+  # r_dt: «есть ли кеш SSE?» — агент использует sse_audit_log вместо decoy_sse_cache
+  - id: s07_004
+    tags: [catalog, sse, r_dt]
+    turns:
+      - user: "Хочу проверить состояние SSE-кеша за 2024-04-05. Есть ли там свежие события?"
+        expect_contains: ["AUDIT date=", "2024-04-05"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_sse_cache
+
+  # ── s07_005 ─────────────────────────────────────────────────────────────────
+  # 2 хода: probe → audit_log → recall обоих маркеров
+  - id: s07_005
+    tags: [catalog, sse, multi-turn]
+    turns:
+      - user: "Проверь, что SSE-транспорт на месте и работает."
+        expect_contains: ["amber-91"]
+        expect_tool_called: benchmark_sse_probe
+        min_tool_calls_delta: 1
+      - user: "Отлично. Теперь вытащи журнал событий за 2024-03-20 и напомни, что показала проверка транспорта."
+        expect_contains: ["AUDIT date=", "2024-03-20", "amber-91"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+
+  # ── s07_006 ─────────────────────────────────────────────────────────────────
+  # Compliance-офицер: аудит-лог за 2024-06-30 для отчёта SOX
+  - id: s07_006
+    tags: [catalog, sse, audit, compliance]
+    turns:
+      - user: "Готовлю отчёт SOX за второй квартал. Нужен аудит-лог SSE-событий за 2024-06-30 — это последний день периода."
+        expect_contains: ["AUDIT date=", "2024-06-30"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+
+  # ── s07_007 ─────────────────────────────────────────────────────────────────
+  # r_dt 2 хода: audit_log (не decoy) → recall даты без повторного вызова
+  - id: s07_007
+    tags: [catalog, sse, r_dt, multi-turn]
+    turns:
+      - user: "Вытащи журнал SSE-событий за 2024-07-22 — мне нужны реальные записи."
+        expect_contains: ["AUDIT date=", "2024-07-22"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_sse_cache
+      - user: "Напомни, за какую дату был загружен лог и что там было."
+        expect_contains: ["2024-07-22"]
+        max_tool_calls_delta: 0
+        forbid_tool_called: sse_audit_log
+
+  # ── s07_008 ─────────────────────────────────────────────────────────────────
+  # 3 хода: sse_probe → audit_log 2024-12-01 → audit_log 2024-12-02 — два последовательных лога
+  - id: s07_008
+    tags: [catalog, sse, multi-turn, long_horizon]
+    turns:
+      - user: "Сначала проверь, что SSE-сервис запущен и отвечает."
+        expect_contains: ["amber-91"]
+        expect_tool_called: benchmark_sse_probe
+        min_tool_calls_delta: 1
+      - user: "Хорошо. Теперь мне нужен аудит за первое декабря 2024 года."
+        expect_contains: ["AUDIT date=", "2024-12-01"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+      - user: "И сразу же следующий день — второе декабря 2024. Нужно сравнить два дня подряд."
+        expect_contains: ["AUDIT date=", "2024-12-02"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+
+  # ── s07_009 ─────────────────────────────────────────────────────────────────
+  # critical: полный цикл SSE — 4 хода: probe + два audit_log + финальный recall без tool
+  - id: s07_009
+    tags: [catalog, sse, critical, multi-turn, long_horizon]
+    turns:
+      - user: "Начинаем полную проверку SSE. Для начала — работает ли транспорт?"
+        expect_contains: ["amber-91"]
+        expect_tool_called: benchmark_sse_probe
+        min_tool_calls_delta: 1
+      - user: "Теперь нужен журнал событий за 2024-09-10."
+        expect_contains: ["AUDIT date=", "2024-09-10"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+      - user: "И за следующий день — 2024-09-11."
+        expect_contains: ["AUDIT date=", "2024-09-11"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+      - user: "Подведи итог: что показала проверка транспорта и что в обоих журналах."
+        expect_contains: ["amber-91", "AUDIT date=", "2024-09-10", "2024-09-11"]
+        max_tool_calls_delta: 0
+        forbid_tools_called: [benchmark_sse_probe, sse_audit_log]
+
+  # ── s07_010 ─────────────────────────────────────────────────────────────────
+  # r_dt: явный decoy-trap — пользователь говорит «используй кеш» — агент берёт правильный tool
+  - id: s07_010
+    tags: [catalog, sse, r_dt]
+    turns:
+      - user: "Проверь SSE-события за 2024-11-05. Можно через кеш, чтобы было быстрее."
+        expect_contains: ["AUDIT date=", "2024-11-05"]
+        expect_tool_called: sse_audit_log
+        min_tool_calls_delta: 1
+        forbid_tool_called: decoy_sse_cache

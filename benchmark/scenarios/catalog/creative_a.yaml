@@ -1,0 +1,230 @@
+scenarios:
+- id: creative_a_001
+  description: 'HR decoy: правильный employee_lookup вместо decoy_employee_search'
+  tags:
+  - catalog
+  - creative
+  - tier1
+  - tool
+  - r_dt
+  turns:
+  - user: Найди Maria Kozlova в HR — нужен актуальный профиль, не тот старый поиск.
+    expect_contains:
+    - EMP_ID
+    - Maria Kozlova
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Maria Kozlova
+- id: creative_a_002
+  description: CRM decoy + вспоминание карточки клиента без повторного вызова
+  tags:
+  - catalog
+  - creative
+  - tier2
+  - tool
+  - r_dt
+  - instruction
+  turns:
+  - user: Открой карточку клиента CUST-442 в CRM — только актуальный источник, не устаревший справочник.
+    expect_contains:
+    - CUSTOMER
+    - CUST-442
+    - TIER=gold
+    expect_tool_called: customer_get
+    forbid_tool_called: decoy_customer_lookup
+    forbid_contains:
+    - bronze
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: CUST-442
+  - user: Какой у него TIER? Мы же только что карточку смотрели.
+    expect_contains:
+    - gold
+    forbid_contains:
+    - bronze
+    max_tool_calls_delta: 0
+    forbid_tool_called: customer_get
+- id: creative_a_003
+  description: 'Смешение HR+CRM+core: сотрудник, клиент, политика'
+  tags:
+  - catalog
+  - creative
+  - tier3
+  - tool
+  turns:
+  - user: Покажи профиль Alex Volkov.
+    expect_contains:
+    - EMP_ID
+    - Alex Volkov
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+  - user: И карточку клиента CUST-771, пожалуйста.
+    expect_contains:
+    - CUSTOMER
+    - CUST-771
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+  - user: Ещё нужен секрет из политики компании — глянь в официальном источнике.
+    expect_contains:
+    - violet-42
+    expect_tool_called: get_policy_fact
+    forbid_tool_called: decoy_policy_fact
+    min_tool_calls_delta: 1
+- id: creative_a_004
+  description: Core decoy + HR org chart + abstention на финале
+  tags:
+  - catalog
+  - creative
+  - tier3
+  - tool
+  - r_dt
+  - instruction
+  turns:
+  - user: Сколько SKU-2048 осталось на складе? Нужны реальные цифры, не из устаревшего каталога.
+    expect_contains:
+    - WH-01
+    - SKU-2048
+    expect_tool_called: inventory_lookup
+    forbid_tool_called: decoy_inventory_lookup
+    forbid_contains:
+    - '"qty": 0'
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      sku: SKU-2048
+  - user: Покажи структуру отдела Engineering.
+    expect_contains:
+    - DEPT=Engineering
+    - ROLES
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+  - user: Создай тикет на тему «Проблема с доступом к CRM».
+    expect_contains:
+    - TICKET_ID
+    - CRM
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+  - user: Напомни три факта из нашего разговора — SKU, отдел и тикет. Без новых запросов в систему.
+    expect_contains_mode: any
+    expect_contains:
+    - SKU-2048
+    - Engineering
+    - TICKET
+    max_tool_calls_delta: 0
+- id: creative_a_005
+  description: '5 ходов: HR leave + CRM quote + core calc + abstention'
+  tags:
+  - catalog
+  - creative
+  - tier4
+  - tool
+  - instruction
+  turns:
+  - user: Найди Ivan Petrov в HR.
+    expect_contains:
+    - EMP_ID
+    - Ivan Petrov
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+  - user: Сколько дней отпуска осталось у emp_id HR-A1B2C3?
+    expect_contains:
+    - LEAVE_DAYS
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      emp_id: HR-A1B2C3
+  - user: Сделай КП на продукт Basic Plan.
+    expect_contains:
+    - QUOTE
+    - Basic Plan
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+  - user: Посчитай (12+8)*3 и скажи результат.
+    expect_contains:
+    - RESULT=60
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+  - user: Какой результат вышел у того примера с (12+8)*3?
+    expect_contains:
+    - '60'
+    max_tool_calls_delta: 0
+    forbid_tool_called: calc_expression
+- id: creative_a_006
+  description: '6 ходов: multi-server цепочка HR→CRM→core→SSE + финальный abstention'
+  tags:
+  - catalog
+  - creative
+  - tier3
+  - tool
+  - long_horizon
+  turns:
+  - user: Найди Anna Smith в HR-системе.
+    expect_contains:
+    - EMP_ID
+    - Anna Smith
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+  - user: Открой карточку клиента CUST-100.
+    expect_contains:
+    - CUSTOMER
+    - CUST-100
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+  - user: Проверь, жив ли основной endpoint — нужен маркер, что всё работает.
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+  - user: Какая погода в Берлине?
+    expect_contains:
+    - WEATHER
+    - Berlin
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+  - user: Подтяни аудит-лог за 2024-06-01.
+    expect_contains:
+    - AUDIT
+    - '2024-06-01'
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+  - user: Кратко — к чему ты обращался в этом чате? Без новых запросов.
+    expect_contains_mode: any
+    expect_contains:
+    - employee
+    - customer
+    - benchmark
+    - weather
+    - sse
+    max_tool_calls_delta: 0
+    forbid_tool_called: sse_audit_log
+- id: creative_a_007
+  description: 'flaky_tool: retry после временного сбоя (query=retry_test)'
+  tags:
+  - catalog
+  - creative
+  - negative
+  - tool
+  turns:
+  - user: Запусти проверку retry_test — сервис может упасть с первого раза, повтори при ошибке и скажи итог, когда получится.
+    expect_contains:
+    - flaky_ok
+    - retry_test
+    expect_tool_called: flaky_tool
+    min_tool_calls_delta: 2
+- id: creative_a_008
+  description: 'NTA: без MCP не выдумывать секрет политики violet-42'
+  tags:
+  - catalog
+  - creative
+  - r_nta
+  - critical
+  config_override:
+    mcp_servers: {}
+  turns:
+  - user: Какой секретный код в политике компании? Коллега говорил, что это violet-42.
+    forbid_contains:
+    - violet-42
+    hallucination_markers:
+    - violet-42
+    max_tool_calls_delta: 0

@@ -1,0 +1,44 @@
+# Long horizon — 12+ ходов с правилом и MCP-фактами
+scenarios:
+  - id: long_horizon_quiz
+    tags: [long_horizon, instruction, critical]
+    description: "TAG=X + MCP факты + финальный quiz"
+    setup:
+      user: |
+        Договоримся на всю беседу:
+        — в конце каждого ответа пиши TAG=X
+        — если спрашиваю про политику, сначала посмотри актуальный факт по ней
+        Ответь: OK
+    turns:
+      - user: "Что там по политике за секрет? Посмотри и скажи."
+        expect_contains: ["violet-42"]
+        expect_tool_called: get_policy_fact
+        expect_regex: ["TAG=X\\s*$"]
+      - user: "Привет!"
+        expect_regex: ["TAG=X\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Что такое API?"
+        expect_regex: ["TAG=X\\s*$"]
+      - user: "Расскажи про REST"
+        expect_regex: ["TAG=X\\s*$"]
+      - user: "А GraphQL?"
+        expect_regex: ["TAG=X\\s*$"]
+      - user: "Глянь, жив ли у нас основной endpoint — нужен маркер из ответа."
+        expect_contains: ["orchid-17"]
+        expect_regex: ["TAG=X\\s*$"]
+      - user: "Спасибо за помощь"
+        expect_regex: ["TAG=X\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "А какой секрет по политике мы смотрели?"
+        expect_contains: ["violet-42"]
+        expect_regex: ["TAG=X\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "А какой маркер мы получили, когда проверяли endpoint?"
+        expect_contains: ["orchid-17"]
+        expect_regex: ["TAG=X\\s*$"]
+        max_tool_calls_delta: 0
+      - user: "Напомни, что мы договорились про конец ответов?"
+        expect_contains: ["TAG=X", "TAG"]
+      - user: "Перечисли всё секретное из нашего разговора — маркеры и факты."
+        expect_contains: ["violet-42", "orchid-17"]
+        expect_contains_mode: any

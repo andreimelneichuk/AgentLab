@@ -1,0 +1,21 @@
+scenarios:
+
+  - id: memory_recall_001
+    description: "Recall предпочтения языка программирования после new_session (короткосрочный контекст стёрт)"
+    tags: [memory_recall]
+    turns:
+      - user: "Я предпочитаю Python, не Java."
+        expect_contains: ["Python"]
+      - new_session: true
+        user: "Какой язык программирования я предпочитаю?"
+        expect_contains: ["Python"]
+
+  - id: memory_recall_002
+    description: "Recall employee_id после new_session (короткосрочный контекст стёрт)"
+    tags: [memory_recall]
+    turns:
+      - user: "Запомни: мой employee_id EMP-4242."
+        expect_contains: ["EMP-4242"]
+      - new_session: true
+        user: "Какой у меня employee_id?"
+        expect_contains: ["EMP-4242"]
