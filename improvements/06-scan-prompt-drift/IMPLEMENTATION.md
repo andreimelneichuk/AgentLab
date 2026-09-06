@@ -129,4 +129,4 @@ PYTHONPATH=. python -m benchmark.compare --variant improvements/06-scan-prompt-d
 Ожидаемый эффект: SR/TSA ≈ baseline (нет лишних LLM-вызовов, нет
 handoff-путаницы); прирост на `s09_instruction`/`s10_adversarial` —
 маркеры напоминают правила на длинных сценариях. E2E требует
-доступа к `localhost`.
+доступа к `llm-server.local`.

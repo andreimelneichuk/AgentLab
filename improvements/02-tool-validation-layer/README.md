@@ -14,14 +14,14 @@ LLM предлагает вызов → инструмент исполняет�
 LLM → proposed_tool_call
          ↓
     tool_executor.execute_tool_command(strict=True)
-         normalize (Basic) → GB validate → jsonschema/pydantic (02)
+         normalize (Baseline Agent) → GB validate → jsonschema/pydantic (02)
          ↓ pass          ↓ fail (error_kind=validation)
     Execute tool    → error message → LLM retry (max 3)
                            ↓ fail after 3
                       log_error + STOP
 ```
 
-Стек валидации: **сначала нормализация и базовая проверка Basic** (`normalize_arguments` + `validate_arguments`), **затем строгая jsonschema/pydantic** (`validate_arguments_strict`) — один проход, без дублирования в `ToolValidator` и `tool_executor`.
+Стек валидации: **сначала нормализация и базовая проверка Baseline Agent** (`normalize_arguments` + `validate_arguments`), **затем строгая jsonschema/pydantic** (`validate_arguments_strict`) — один проход, без дублирования в `ToolValidator` и `tool_executor`.
 
 ## Компоненты
 
@@ -49,7 +49,7 @@ LLM → proposed_tool_call
 | Бронирование без проверки оплаты | Блок (completeness) |
 | SUCCESS без вызова валидационного tool | Блок (tool bypass) |
 
-## Что менять в Basic
+## Что менять в Baseline Agent
 
 | Место | Действие |
 |-------|----------|

@@ -208,5 +208,5 @@ PYTHONPATH=. python -m benchmark.compare \
   --tags multiserver
 ```
 
-Требует доступ к `localhost` — не выполнено в рамках
+Требует доступ к `llm-server.local` — не выполнено в рамках
 этой переработки.

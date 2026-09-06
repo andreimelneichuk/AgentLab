@@ -1,6 +1,5 @@
-"""Исполнение tool calls — поведение синхронизировано с Basic ToolExecutor.
+"""Исполнение tool calls — исполнение вызовов инструментов.
 
-См. ai-api-gateway/gd_ai/services/basic_assistant/src/gb_mcp/tool_executor.py
 """
 from __future__ import annotations
 
@@ -19,7 +18,7 @@ SCHEMA_AUGMENTATIONS: Dict[str, Dict[str, Any]] = {}
 
 @dataclass
 class ToolExecutionResult:
-    """Унифицированный результат выполнения инструмента (как в Basic)."""
+    """Унифицированный результат выполнения инструмента."""
 
     success: bool
     data: Any = None
@@ -109,7 +108,7 @@ def _format_pydantic_error(error: Mapping[str, Any]) -> str:
 
 
 def normalize_arguments(tool_name: str, arguments: Dict[str, Any], input_schema: Dict[str, Any]) -> Dict[str, Any]:
-    """Нормализация args перед валидацией (логика Basic execute_tool_command)."""
+    """Нормализация args перед валидацией."""
     args = dict(arguments) if isinstance(arguments, dict) else {}
     required_params = input_schema.get("required", [])
 
@@ -131,7 +130,7 @@ def normalize_arguments(tool_name: str, arguments: Dict[str, Any], input_schema:
 
 
 def validate_arguments(tool_name: str, input_schema: Dict[str, Any], arguments: Dict[str, Any]) -> ToolExecutionResult:
-    """Валидирует аргументы (required + базовые типы), как Basic _validate_arguments."""
+    """Валидирует аргументы (required + базовые типы)."""
     try:
         properties = input_schema.get("properties", {})
         required = input_schema.get("required", [])
@@ -188,7 +187,7 @@ def validate_arguments_strict(
     *,
     pydantic_model: Optional[type] = None,
 ) -> ToolExecutionResult:
-    """Строгая jsonschema/pydantic проверка поверх Basic baseline (вариант 02)."""
+    """Строгая jsonschema/pydantic проверка поверх baseline (вариант 02)."""
     if pydantic_model is not None:
         try:
             from pydantic import ValidationError as PydanticValidationError
@@ -245,7 +244,7 @@ def prepare_and_validate_arguments(
     strict: bool = False,
     schema_registry: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> Tuple[ToolExecutionResult, Dict[str, Any]]:
-    """normalize → Basic validate → optional strict jsonschema/pydantic."""
+    """normalize → baseline validate → optional strict jsonschema/pydantic."""
     input_schema = extract_input_schema(tool)
     normalized = normalize_arguments(tool_name, arguments, input_schema)
 
@@ -293,7 +292,7 @@ def _check_type(value: Any, expected_type: str) -> bool:
 
 
 def _unify_result_format(result: Any, tool_name: str) -> Dict[str, Any]:
-    """Унификация ответа инструмента (Basic _unify_result_format)."""
+    """Унификация ответа инструмента."""
     if isinstance(result, dict) and "content" in result:
         return result
 
@@ -321,7 +320,7 @@ async def execute_tool_command(
     strict: bool = False,
     schema_registry: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> ToolExecutionResult:
-    """Выполняет один tool call с pre-validation (аналог Basic execute_tool_command)."""
+    """Выполняет один tool call с pre-validation."""
     if not isinstance(arguments, dict):
         return ToolExecutionResult(
             success=False,
@@ -372,7 +371,7 @@ async def execute_tool_command(
 
 
 def tool_result_to_content(result: Dict[str, Any]) -> str:
-    """Формат tool-сообщения для LLM (Basic _messages_after_tools)."""
+    """Формат tool-сообщения для LLM."""
     if result.get("success"):
         data = result.get("data")
         if isinstance(data, (dict, list)):
@@ -393,7 +392,7 @@ def tool_call_dedup_key(tool_call: Dict[str, Any]) -> Tuple[Any, str]:
 
 
 def is_infra_error_result(result: Dict[str, Any]) -> bool:
-    """Инфраструктурная ли ошибка (Basic _is_infra_error_result)."""
+    """Инфраструктурная ли ошибка."""
     kind = result.get("error_kind")
     if kind:
         return kind == "infra"

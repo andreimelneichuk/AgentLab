@@ -1,4 +1,4 @@
-# Basic Agent — variant 12 (Worker + Validator)
+# Baseline Agent Agent — variant 12 (Worker + Validator)
 
 Мультиагентная валидация: Worker генерирует черновик, Validator проверяет по tool trace.
 

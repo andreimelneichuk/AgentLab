@@ -1,0 +1,380 @@
+{
+  "started_at": "2026-09-04T10:00:06.792134+00:00",
+  "config": "/path/to/AgentLab/config.benchmark.yml",
+  "variants": [
+    "original",
+    "improvements/14-graph-rag/variant"
+  ],
+  "scenarios_path": "/path/to/AgentLab/benchmark/scenarios/suites/suite_graph.yaml",
+  "suite": "graph",
+  "backends": [
+    "original",
+    "variant"
+  ],
+  "tag_filter": null,
+  "scenarios": [
+    {
+      "id": "graph_001",
+      "description": "Сколько сотрудников Engineering с активной политикой Remote Work",
+      "tags": [
+        "suite_graph",
+        "graph",
+        "graph_rag"
+      ],
+      "passed": true,
+      "backends": {
+        "original": {
+          "backend": "original",
+          "passed": true,
+          "tags": [
+            "suite_graph",
+            "graph",
+            "graph_rag"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Подскажи, сколько в Engineering людей под активной политикой Remote Work?",
+              "answer": "В отделе **Engineering** под активной политикой **Remote Work** — **1 человек**: Alice (HR-001).",
+              "tool_calls": [
+                "graph_query",
+                "graph_query"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "graph_query",
+                  "arguments": {
+                    "query": "count employees in Engineering department with active policy Remote Work"
+                  }
+                },
+                {
+                  "name": "graph_query",
+                  "arguments": {
+                    "query": "list employees Engineering Remote Work"
+                  }
+                }
+              ],
+              "rounds": 3,
+              "mcp_delta": 2,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": false,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 6,
+              "latency_sec": 2.2528427910001483,
+              "prompt_tokens": 9833,
+              "completion_tokens": 94,
+              "total_tokens": 9927
+            }
+          ],
+          "variant": "/path/to/AgentLab/original",
+          "duration_sec": 2.3
+        },
+        "variant": {
+          "backend": "variant",
+          "passed": true,
+          "tags": [
+            "suite_graph",
+            "graph",
+            "graph_rag"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Подскажи, сколько в Engineering людей под активной политикой Remote Work?",
+              "answer": "В отделе **Engineering** под активной политикой **Remote Work** — **1 человек**:\n\n- **Alice** (ID: HR-001)",
+              "tool_calls": [
+                "graph_query"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "graph_query",
+                  "arguments": {
+                    "query": "{\"query_type\":\"count\",\"department\":\"Engineering\",\"policy\":\"Remote Work\"}"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": false,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 4,
+              "latency_sec": 2.877061084000161,
+              "prompt_tokens": 7109,
+              "completion_tokens": 75,
+              "total_tokens": 7184
+            }
+          ],
+          "variant": "/path/to/AgentLab/improvements/14-graph-rag/variant",
+          "duration_sec": 2.92
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "В отделе **Engineering** под активной политикой **Remote Work** — **1 человек**: Alice (HR-001).",
+          "answer_b_preview": "В отделе **Engineering** под активной политикой **Remote Work** — **1 человек**:\n\n- **Alice** (ID: HR-001)",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "graph_002",
+      "description": "Подсчёт сотрудников в несуществующем отделе Legal (пустой граф)",
+      "tags": [
+        "suite_graph",
+        "graph",
+        "r_nta"
+      ],
+      "passed": true,
+      "backends": {
+        "original": {
+          "backend": "original",
+          "passed": true,
+          "tags": [
+            "suite_graph",
+            "graph",
+            "r_nta"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "А в Legal кто-нибудь на Remote Work сидит? Сколько их?",
+              "answer": "По данным графа знаний сейчас **не могу подтвердить**, что в Legal есть сотрудники на Remote Work — запрос вернул пустой результат (0 записей).\n\nИзвестно только, что в отделе Legal есть роли: lead, senior, mid, junior (руководитель — HR-4787). Но конкретная информация о режиме работы сотрудников в доступных мне источниках отсутствует.",
+              "tool_calls": [
+                "graph_query",
+                "org_chart_dept",
+                "graph_query"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "graph_query",
+                  "arguments": {
+                    "query": "list employees in department Legal with work_mode Remote Work"
+                  }
+                },
+                {
+                  "name": "org_chart_dept",
+                  "arguments": {
+                    "department": "Legal"
+                  }
+                },
+                {
+                  "name": "graph_query",
+                  "arguments": {
+                    "query": "count employees in department Legal"
+                  }
+                }
+              ],
+              "rounds": 4,
+              "mcp_delta": 3,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": true,
+              "is_tool_selection_measurable": false,
+              "tool_selection_ok": false,
+              "is_tool_args_measurable": false,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 8,
+              "latency_sec": 3.1651079999865033,
+              "prompt_tokens": 13217,
+              "completion_tokens": 175,
+              "total_tokens": 13392
+            }
+          ],
+          "variant": "/path/to/AgentLab/original",
+          "duration_sec": 3.19
+        },
+        "variant": {
+          "backend": "variant",
+          "passed": true,
+          "tags": [
+            "suite_graph",
+            "graph",
+            "r_nta"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "А в Legal кто-нибудь на Remote Work сидит? Сколько их?",
+              "answer": "В графе знаний нет данных по сотрудникам отдела Legal с политикой Remote Work (результат пустой, count = 0). Поэтому подтвердить, кто именно там сидит удалённо и сколько их, я не могу.",
+              "tool_calls": [
+                "graph_query"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "graph_query",
+                  "arguments": {
+                    "query": "{\"query_type\":\"count\",\"department\":\"Legal\",\"policy\":\"Remote Work\"}"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": true,
+              "is_tool_selection_measurable": false,
+              "tool_selection_ok": false,
+              "is_tool_args_measurable": false,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 4,
+              "latency_sec": 1.5475408750062343,
+              "prompt_tokens": 7074,
+              "completion_tokens": 88,
+              "total_tokens": 7162
+            }
+          ],
+          "variant": "/path/to/AgentLab/improvements/14-graph-rag/variant",
+          "duration_sec": 1.6
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.16,
+          "passed": false,
+          "answer_a_preview": "По данным графа знаний сейчас **не могу подтвердить**, что в Legal есть сотрудники на Remote Work — запрос вернул пустой результат (0 записей).\n\nИзвестно только, что в отделе Legal есть роли: lead, senior, mid, junior (руководитель — HR-4787). Но конкретная информация о режиме работы сотрудников в д",
+          "answer_b_preview": "В графе знаний нет данных по сотрудникам отдела Legal с политикой Remote Work (результат пустой, count = 0). Поэтому подтвердить, кто именно там сидит удалённо и сколько их, я не могу.",
+          "turn_index": 0
+        }
+      ]
+    }
+  ],
+  "finished_at": "2026-09-04T10:00:17.758831+00:00",
+  "all_passed": true,
+  "scorecard": {
+    "per_backend": {
+      "original": {
+        "backend": "original",
+        "composite_agent_score": 95.7,
+        "domain_solve_rates": {
+          "graph": 1.0
+        },
+        "solve_rate": 1.0,
+        "critical_solve_rate": 0.0,
+        "turn_accuracy": 1.0,
+        "agent_accuracy_pct": 100.0,
+        "tool_selection_accuracy": 1.0,
+        "tool_argument_accuracy": 0.0,
+        "abstention_pass": 0.0,
+        "anti_hallucination_pass": 1.0,
+        "decoy_avoidance_pass": 0.0,
+        "r_nta": 0.0,
+        "r_dt": 0.0,
+        "tokens_per_solved": 11659.5,
+        "mean_latency_sec": 2.709,
+        "scenarios_passed": 2,
+        "scenarios_total": 2,
+        "critical_scenarios_passed": 0,
+        "critical_scenarios_total": 0,
+        "turns_passed": 2,
+        "turns_graded": 2,
+        "nta_hallucinations": 0,
+        "nta_turns": 1,
+        "dt_errors": 0,
+        "dt_turns": 0,
+        "tsa_ok": 1,
+        "tsa_turns": 1,
+        "taa_ok": 0,
+        "taa_turns": 0,
+        "abstention_ok": 0,
+        "abstention_turns": 0,
+        "total_tokens": 23319,
+        "total_prompt_tokens": 23050,
+        "total_completion_tokens": 269,
+        "total_latency_sec": 5.42,
+        "failure_mix": {},
+        "failure_counts": {}
+      },
+      "variant": {
+        "backend": "variant",
+        "composite_agent_score": 97.0,
+        "domain_solve_rates": {
+          "graph": 1.0
+        },
+        "solve_rate": 1.0,
+        "critical_solve_rate": 0.0,
+        "turn_accuracy": 1.0,
+        "agent_accuracy_pct": 100.0,
+        "tool_selection_accuracy": 1.0,
+        "tool_argument_accuracy": 0.0,
+        "abstention_pass": 0.0,
+        "anti_hallucination_pass": 1.0,
+        "decoy_avoidance_pass": 0.0,
+        "r_nta": 0.0,
+        "r_dt": 0.0,
+        "tokens_per_solved": 7173.0,
+        "mean_latency_sec": 2.212,
+        "scenarios_passed": 2,
+        "scenarios_total": 2,
+        "critical_scenarios_passed": 0,
+        "critical_scenarios_total": 0,
+        "turns_passed": 2,
+        "turns_graded": 2,
+        "nta_hallucinations": 0,
+        "nta_turns": 1,
+        "dt_errors": 0,
+        "dt_turns": 0,
+        "tsa_ok": 1,
+        "tsa_turns": 1,
+        "taa_ok": 0,
+        "taa_turns": 0,
+        "abstention_ok": 0,
+        "abstention_turns": 0,
+        "total_tokens": 14346,
+        "total_prompt_tokens": 14183,
+        "total_completion_tokens": 163,
+        "total_latency_sec": 4.42,
+        "failure_mix": {},
+        "failure_counts": {}
+      }
+    },
+    "aggregate": {},
+    "comparative": {},
+    "scorecard_version": "v1"
+  },
+  "baseline_diff": {
+    "status": "no_baseline"
+  }
+}

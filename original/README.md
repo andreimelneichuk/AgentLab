@@ -1,6 +1,6 @@
-# Basic Agent — original (эталон)
+# Baseline Agent — original (эталонный пайплайн)
 
-Замороженная эталонная версия: basic loop + MCP.
+Замороженная эталонная версия стандартного пайплайна: tool loop + MCP.
 
 Бенчмарк запускается **из корня** `experiments/`:
 

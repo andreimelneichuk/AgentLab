@@ -310,7 +310,7 @@ def tool_limits(config: Dict[str, Any]) -> Tuple[int, int, int]:
     limits = (config.get("tools") or {}).get("call_limit") or {}
     exec_retries = int(limits.get("tool_exec_fail_retries", 3))
     return (
-        int(limits.get("basic_rounds", 5)),
+        int(limits.get("tool_loop_rounds", limits.get("basic_rounds", 5))),
         int(limits.get("thread", 50)),
         exec_retries,
     )

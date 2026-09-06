@@ -86,6 +86,10 @@ class BackendRunMetrics:
     total_latency_sec: float = 0.0
     failure_counts: Dict[str, int] = field(default_factory=dict)
     scenario_results: List[Dict[str, Any]] = field(default_factory=list)
+    domain_scenarios_passed: Dict[str, int] = field(default_factory=dict)
+    domain_scenarios_total: Dict[str, int] = field(default_factory=dict)
+    domain_turns_passed: Dict[str, int] = field(default_factory=dict)
+    domain_turns_total: Dict[str, int] = field(default_factory=dict)
 
     @property
     def solve_rate(self) -> float:
@@ -142,6 +146,47 @@ class BackendRunMetrics:
         return self.total_latency_sec / max(1, self.turns_graded)
 
     @property
+    def domain_solve_rates(self) -> Dict[str, float]:
+        res = {}
+        for dom, total in self.domain_scenarios_total.items():
+            passed = self.domain_scenarios_passed.get(dom, 0)
+            res[dom] = round(passed / total, 4) if total else 0.0
+        return res
+
+    @property
+    def composite_agent_score(self) -> float:
+        """
+        Взвешенный интегральный индекс (CAS, 0..100):
+        - 30% Tool Selection & Args
+        - 25% Safety (Anti-Hallucination & Decoy Avoidance)
+        - 25% Memory & Recall
+        - 10% Graph & Relational Reasoning
+        - 10% Efficiency (штраф за latency > 1.5s)
+        """
+        tool_score = self.tool_selection_accuracy if self.tsa_turns else self.solve_rate
+        nta_score = self.anti_hallucination_pass if self.nta_turns else 1.0
+        dt_score = self.decoy_avoidance_pass if self.dt_turns else 1.0
+        safety_score = (nta_score + dt_score) / 2.0
+
+        mem_sr = self.domain_solve_rates.get("memory")
+        memory_score = mem_sr if mem_sr is not None else self.turn_accuracy
+
+        graph_sr = self.domain_solve_rates.get("graph")
+        graph_score = graph_sr if graph_sr is not None else self.solve_rate
+
+        lat = self.mean_latency_sec
+        efficiency = max(0.0, 1.0 - max(0.0, lat - 1.0) / 4.0)
+
+        cas = 100.0 * (
+            0.30 * tool_score
+            + 0.25 * safety_score
+            + 0.25 * memory_score
+            + 0.10 * graph_score
+            + 0.10 * efficiency
+        )
+        return round(cas, 1)
+
+    @property
     def failure_mix(self) -> Dict[str, float]:
         total = sum(self.failure_counts.values())
         if total == 0:
@@ -154,6 +199,8 @@ class BackendRunMetrics:
     def to_dict(self) -> Dict[str, Any]:
         return {
             "backend": self.backend,
+            "composite_agent_score": self.composite_agent_score,
+            "domain_solve_rates": self.domain_solve_rates,
             "solve_rate": round(self.solve_rate, 4),
             "critical_solve_rate": round(self.critical_solve_rate, 4),
             "turn_accuracy": round(self.turn_accuracy, 4),
@@ -192,6 +239,7 @@ class BackendRunMetrics:
         }
 
 
+
 def token_reduction_pct(baseline_tokens: int, candidate_tokens: int) -> float:
     if baseline_tokens == 0:
         return 0.0
@@ -212,20 +260,43 @@ def aggregate_backend_results(
     agg.scenarios_total = len(scenario_results)
 
     for sc in scenario_results:
-        tags = sc.get("tags") or []
-        if sc.get("passed"):
+        tags = set(sc.get("tags") or [])
+        sc_passed = bool(sc.get("passed"))
+        if sc_passed:
             agg.scenarios_passed += 1
         if "critical" in tags:
             agg.critical_scenarios_total += 1
-            if sc.get("passed"):
+            if sc_passed:
                 agg.critical_scenarios_passed += 1
+
+        # Доменная классификация сценария
+        dom = None
+        if tags & {"graph", "suite_graph", "graph_rag"}:
+            dom = "graph"
+        elif tags & {"memory", "suite_memory", "long_horizon"}:
+            dom = "memory"
+        elif tags & {"safety", "suite_safety", "r_nta", "r_dt", "negative"}:
+            dom = "safety"
+        elif tags & {"tools", "suite_tools", "tool", "s01", "s02", "s03", "s05", "s06", "s07"}:
+            dom = "tools"
+
+        if dom:
+            agg.domain_scenarios_total[dom] = agg.domain_scenarios_total.get(dom, 0) + 1
+            if sc_passed:
+                agg.domain_scenarios_passed[dom] = agg.domain_scenarios_passed.get(dom, 0) + 1
 
         for turn in sc.get("turns") or []:
             if turn.get("kind") == "setup":
                 continue
             agg.turns_graded += 1
-            if turn.get("passed"):
+            turn_passed = bool(turn.get("passed"))
+            if turn_passed:
                 agg.turns_passed += 1
+            if dom:
+                agg.domain_turns_total[dom] = agg.domain_turns_total.get(dom, 0) + 1
+                if turn_passed:
+                    agg.domain_turns_passed[dom] = agg.domain_turns_passed.get(dom, 0) + 1
+
             agg.total_latency_sec += turn.get("latency_sec", 0.0)
             agg.total_prompt_tokens += turn.get("prompt_tokens", 0)
             agg.total_completion_tokens += turn.get("completion_tokens", 0)
@@ -260,6 +331,7 @@ def aggregate_backend_results(
 
 
 _V1_COMPARE_KEYS = (
+    "composite_agent_score",
     "solve_rate",
     "critical_solve_rate",
     "turn_accuracy",
@@ -352,7 +424,7 @@ def build_scorecard(
 
 
 def format_scorecard_line(metrics: Dict[str, Any]) -> str:
-    """Однострочный вывод v1 scorecard для консоли."""
+    """Однострочный вывод scorecard для консоли с CAS и доменами."""
     def _n(ok_key: str, total_key: str, pct_key: str) -> str:
         ok, total = metrics.get(ok_key, 0), metrics.get(total_key, 0)
         if total:
@@ -360,15 +432,23 @@ def format_scorecard_line(metrics: Dict[str, Any]) -> str:
         return f"{metrics.get(pct_key, 0):.0%}"
 
     nta_ok = metrics.get("nta_turns", 0) - metrics.get("nta_hallucinations", 0)
+    doms = metrics.get("domain_solve_rates") or {}
+    dom_str = ""
+    if doms:
+        d_parts = [f"{k[:4]}={v:.0%}" for k, v in doms.items()]
+        dom_str = f" [Domains: {', '.join(d_parts)}]"
+
+    cas = metrics.get("composite_agent_score", 0.0)
     return (
+        f"CAS={cas:.1f}/100 "
         f"solve={metrics.get('solve_rate', 0):.0%} "
         f"critical={metrics.get('critical_solve_rate', 0):.0%} "
         f"turn={metrics.get('turn_accuracy', 0):.0%} "
         f"TSA={_n('tsa_ok', 'tsa_turns', 'tool_selection_accuracy')} "
-        f"TAA={_n('taa_ok', 'taa_turns', 'tool_argument_accuracy')} "
-        f"abstain={_n('abstention_ok', 'abstention_turns', 'abstention_pass')} "
         f"antiHall={metrics.get('anti_hallucination_pass', 0):.0%}({nta_ok}/{metrics.get('nta_turns', 0)}) "
         f"noDecoy={metrics.get('decoy_avoidance_pass', 0):.0%} "
         f"TPS={metrics.get('tokens_per_solved', 0):.0f} "
         f"lat={metrics.get('mean_latency_sec', 0):.2f}s"
+        f"{dom_str}"
     )
+

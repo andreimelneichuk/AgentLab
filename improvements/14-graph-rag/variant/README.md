@@ -1,4 +1,4 @@
-# Basic Agent — Graph-RAG variant
+# Baseline Agent Agent — Graph-RAG variant
 
 Вариант с in-memory Graph-RAG для HR/policy агрегатов и связей сущностей.
 

@@ -283,7 +283,7 @@ def tool_limits(config: Dict[str, Any]) -> Tuple[int, int, int]:
     limits = (config.get("tools") or {}).get("call_limit") or {}
     exec_retries = int(limits.get("tool_exec_fail_retries", 3))
     return (
-        int(limits.get("basic_rounds", 5)),
+        int(limits.get("tool_loop_rounds", limits.get("basic_rounds", 5))),
         int(limits.get("thread", 50)),
         exec_retries,
     )
@@ -397,6 +397,7 @@ class BasicLoopSession:
             "data": result.data if result.success else None,
             "error": result.error if not result.success else None,
             "error_kind": result.error_kind if not result.success else None,
+            "normalized_arguments": getattr(result, "normalized_arguments", None) or tool_args,
         }
 
     async def _execute_tool_calls(self, tool_calls: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -541,7 +542,7 @@ class BasicLoopSession:
         else:
             self._last_tool_round_finalize = False
 
-        return combined, updated_working
+        return combined, updated_working, mcp_tool_results
 
 
     async def run_turn(self, user_message: str) -> TurnResult:
@@ -598,17 +599,24 @@ class BasicLoopSession:
                                 for tc in result.tool_calls
                             ]
                             all_tool_names.extend(tc["name"] for tc in tool_calls if tc["name"])
-                            for tc in tool_calls:
-                                turn_details.append({
-                                    "name": tc["name"],
-                                    "arguments": tc.get("arguments") or {},
-                                })
                             working.append({
                                 "role": "assistant",
                                 "content": result.content or "",
                                 "tool_calls": tool_calls,
                             })
-                            tool_results, working = await self._execute_tools(tool_calls, working)
+                            tool_results, working, mcp_results = await self._execute_tools(tool_calls, working)
+                            for tc in tool_calls:
+                                name = tc.get("name", "")
+                                if is_knowledge_index_tool(name):
+                                    turn_details.append({
+                                        "name": name,
+                                        "arguments": tc.get("arguments") or {},
+                                    })
+                            for r in mcp_results:
+                                turn_details.append({
+                                    "name": r.get("tool_name", ""),
+                                    "arguments": r.get("normalized_arguments") or {},
+                                })
                             working.extend(tool_results)
                             if getattr(self, "_last_tool_round_finalize", False):
                                 break

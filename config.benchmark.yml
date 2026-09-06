@@ -11,8 +11,8 @@ llm:
     vllm_local:
       type: vllm
       api_key: "EMPTY"
-      base_url: "http://localhost:8001/v1"
-      health_check_url: "http://localhost:8001/health"
+      base_url: "http://llm-server.local:8001/v1"
+      health_check_url: "http://llm-server.local:8001/health"
       request_timeout: 180
 
   models:
@@ -32,7 +32,7 @@ llm:
 
 tools:
   call_limit:
-    basic_rounds: 5
+    tool_loop_rounds: 5
     thread: 50
 
 agent:
@@ -64,7 +64,7 @@ mcp_servers:
     type: sse
     url: http://127.0.0.1:19100/mcp-sse
 
-basic_http:
+http_backend:
   base_url: "http://127.0.0.1:9094"
   webhook_url: "http://127.0.0.1:19110"
   webhook_port: 19110

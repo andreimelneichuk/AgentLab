@@ -9,7 +9,7 @@
 ### 1. `tool_executor.py` (shared baseline + strict mode)
 
 - `SCHEMA_AUGMENTATIONS`, `merge_schema_augmentation`, `build_schema_registry`
-- `validate_arguments_strict()` — jsonschema/pydantic поверх Basic baseline
+- `validate_arguments_strict()` — jsonschema/pydantic поверх Baseline Agent baseline
 - `execute_tool_command(..., strict=False)` — по умолчанию только GB; вариант 02 передаёт `strict=True`
 
 ### 2. `tool_validator.py` (тонкая обёртка)

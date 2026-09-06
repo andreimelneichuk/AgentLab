@@ -1,0 +1,564 @@
+scenarios:
+- id: s01_001
+  description: DevOps проверяет живость MCP endpoint через benchmark_probe и маркер
+  tags:
+  - catalog
+  - smoke
+  - suite_tools
+  - tools
+  turns:
+  - user: Слушай, не уверен что бэкенд вообще поднят — глянь живой ли сервис и скажи
+      какой там маркер
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+- id: s01_002
+  description: Мониторинг запрашивает healthcheck — маркер + краткий статус
+  tags:
+  - catalog
+  - suite_tools
+  - tools
+  turns:
+  - user: Алерт кричит что сервис может лежать — чекни плз и коротко напиши статус
+    expect_contains:
+    - orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+    expect_regex:
+    - (ок|работ|здоров|active|up|live)
+- id: s01_003
+  description: Пользователь считает стоимость 3 серверов по 850 $/мес через calc_expression
+  tags:
+  - catalog
+  - suite_tools
+  - tools
+  turns:
+  - user: 'Хочу прикинуть расходы на инфру: три сервера по 850 баксов в месяц. Сколько
+      в месяц выйдет?'
+    expect_contains:
+    - '2550'
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: 3*850
+- id: s01_004
+  description: Финансист рассчитывает ROI инвестиций через calc_expression с проверкой
+    аргументов
+  tags:
+  - catalog
+  - critical
+  - suite_tools
+  - tools
+  turns:
+  - user: 'Нужен ROI по проекту: вложили 45 000, выручка 120 000. Формула (доход −
+      затраты) / затраты × 100. Посчитай % возврата'
+    expect_contains:
+    - RESULT=
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: (120000-45000)/45000*100
+- id: s02_001
+  description: Разработчик ищет документацию по asyncio через правильный tool, не
+    decoy
+  tags:
+  - catalog
+  - s02
+  - suite_tools
+  - tier1
+  - tool
+  - tools
+  turns:
+  - user: Нужна дока по asyncio — как корутины запускать и event loop юзать
+    expect_contains:
+    - REF=PYDOC-778
+    - asyncio
+    expect_tool_called: python_doc_lookup
+    forbid_tool_called: decoy_python_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      topic: asyncio
+- id: s02_002
+  description: Тимлид просит объяснить decorators с примерами — lookup на первом ходу,
+    recall без tool на втором
+  tags:
+  - catalog
+  - instruction
+  - s02
+  - suite_tools
+  - tier2
+  - tool
+  - tools
+  turns:
+  - user: Объясни decorators в Python на примерах — глянь актуальную доку
+    expect_contains:
+    - REF=PYDOC-778
+    - decorator
+    expect_tool_called: python_doc_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      topic: decorators
+  - user: Ок, а какие примеры использования там были? Коротко перечисли
+    expect_contains:
+    - decorator
+    max_tool_calls_delta: 0
+    forbid_tool_called: python_doc_lookup
+- id: s03_001
+  tags:
+  - catalog
+  - smoke
+  - suite_tools
+  - tools
+  - weather
+  turns:
+  - user: Лечу в Лондон на след неделе — какая там погода, чтобы понять что брать?
+    expect_contains:
+    - WEATHER
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: London
+- id: s03_002
+  tags:
+  - catalog
+  - suite_tools
+  - tools
+  - weather
+  turns:
+  - user: Тимбилдинг в Токио — какая там погода? Решаем, на улице делать или нет
+    expect_contains:
+    - WEATHER
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Tokyo
+- id: s05_001
+  description: HR-менеджер ищет профиль нового коллеги Dmitry Orlov перед онбордингом
+  tags:
+  - catalog
+  - smoke
+  - suite_tools
+  - tools
+  turns:
+  - user: Завтра выходит новый сотрудник Dmitry Orlov — найди его профиль в системе,
+      мне нужно подготовиться к онбордингу
+    expect_contains:
+    - EMP_ID=
+    - NAME=Dmitry Orlov
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Dmitry Orlov
+- id: s05_002
+  description: 'r_dt: CEO просит найти сотрудника — правильный employee_lookup, не
+    decoy_employee_search'
+  tags:
+  - catalog
+  - r_dt
+  - suite_tools
+  - tools
+  turns:
+  - user: Найди сотрудника Sarah Mitchell в нашей системе
+    expect_contains:
+    - EMP_ID=
+    - DEPT=
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Sarah Mitchell
+- id: s05_003
+  description: 'Профиль + recall: найти Maria Chen, затем уточнить её DEPT без повторного
+    вызова'
+  tags:
+  - catalog
+  - instruction
+  - suite_tools
+  - tools
+  turns:
+  - user: Найди в системе профиль Maria Chen
+    expect_contains:
+    - EMP_ID=
+    - DEPT=
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Maria Chen
+  - user: А напомни — в каком отделе работает Maria Chen? Мы же только что смотрели
+      её профиль
+    expect_contains:
+    - DEPT=
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+- id: s05_004
+  description: Сотрудник спрашивает остаток своего отпуска по известному emp_id HR-B3C4D5
+  tags:
+  - catalog
+  - suite_tools
+  - tools
+  turns:
+  - user: Мой ID сотрудника HR-B3C4D5 — сколько дней отпуска у меня осталось?
+    expect_contains:
+    - LEAVE_DAYS=
+    - emp_id=HR-B3C4D5
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      emp_id: HR-B3C4D5
+- id: s05_005
+  description: 'Цепочка: employee_lookup для James Park → leave_balance с emp_id из
+    ответа'
+  tags:
+  - catalog
+  - suite_tools
+  - tools
+  turns:
+  - user: Найди сотрудника James Park в системе
+    expect_contains:
+    - EMP_ID=
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: James Park
+  - user: Отлично. Теперь проверь, сколько дней отпуска у него осталось
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+- id: s05_006
+  description: 'r_dt + отпуск: проверить баланс отпуска — правильный leave_balance
+    с expect_tool_args'
+  tags:
+  - catalog
+  - r_dt
+  - suite_tools
+  - tools
+  turns:
+  - user: Сколько дней отпуска осталось у сотрудника HR-F7G8H9?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      emp_id: HR-F7G8H9
+- id: s05_007
+  description: Оргструктура отдела Marketing — org_chart_dept
+  tags:
+  - catalog
+  - suite_tools
+  - tools
+  turns:
+  - user: Расскажи про отдел Marketing — кто там работает и кто главный?
+    expect_contains:
+    - DEPT=Marketing
+    - ROLES=
+    - HEAD=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Marketing
+- id: s05_008
+  description: 'Оргструктура + recall: Engineering → кто HEAD? — ответить из памяти
+    без повторного вызова'
+  tags:
+  - catalog
+  - instruction
+  - suite_tools
+  - tools
+  turns:
+  - user: Покажи структуру отдела Engineering — кто там работает и кто руководит
+    expect_contains:
+    - DEPT=Engineering
+    - HEAD=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Engineering
+  - user: А кто у них руководитель? Мы же только что смотрели оргструктуру
+    expect_contains:
+    - HEAD=
+    max_tool_calls_delta: 0
+    forbid_tool_called: org_chart_dept
+- id: s06_001
+  description: Менеджер по продажам проверяет карточку клиента CUST-555 перед звонком
+  tags:
+  - catalog
+  - s06
+  - suite_tools
+  - tier1
+  - tool
+  - tools
+  turns:
+  - user: Через 10 минут звонок клиенту CUST-555 — открой его карточку, хочу освежить
+      в памяти детали.
+    expect_contains:
+    - CUSTOMER=CUST-555
+    - TIER
+    - REGION
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: CUST-555
+- id: s06_002
+  description: 'r_dt: «посмотри клиента» — агент использует customer_get, не decoy_customer_lookup,
+    с expect_tool_args'
+  tags:
+  - catalog
+  - r_dt
+  - s06
+  - suite_tools
+  - tier1
+  - tool
+  - tools
+  turns:
+  - user: Посмотри клиента CUST-210 — нужна актуальная информация.
+    expect_contains:
+    - CUSTOMER=CUST-210
+    - TIER
+    expect_tool_called: customer_get
+    forbid_tool_called: decoy_customer_lookup
+    forbid_contains:
+    - TIER=bronze
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: CUST-210
+- id: s06_003
+  description: 'Клиент + recall: загрузить карточку CUST-301, затем на следующем ходу
+    назвать TIER без tool'
+  tags:
+  - catalog
+  - instruction
+  - s06
+  - suite_tools
+  - tier2
+  - tool
+  - tools
+  turns:
+  - user: Открой карточку клиента CUST-301 — хочу посмотреть все данные по нему.
+    expect_contains:
+    - CUSTOMER=CUST-301
+    - TIER
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: CUST-301
+  - user: А какой у него тир? Мы же только что смотрели его карточку.
+    expect_contains:
+    - TIER
+    max_tool_calls_delta: 0
+    forbid_tool_called: customer_get
+- id: s06_004
+  description: Техподдержка создаёт тикет 'Database connection timeout'
+  tags:
+  - catalog
+  - s06
+  - suite_tools
+  - tier1
+  - tool
+  - tools
+  turns:
+  - user: 'Создай тикет на проблему с базой данных — тема: Database connection timeout.'
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: Database connection timeout
+- id: s06_005
+  description: 'Тикет + контекст: сначала customer_get CUST-410, потом ticket_create
+    с customer_id из ответа'
+  tags:
+  - catalog
+  - instruction
+  - s06
+  - suite_tools
+  - tier2
+  - tool
+  - tools
+  turns:
+  - user: Открой карточку клиента CUST-410 — у него проблема, нужно зарегистрировать
+      обращение.
+    expect_contains:
+    - CUSTOMER=CUST-410
+    - TIER
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: CUST-410
+  - user: Отлично, теперь создай тикет 'Login page not loading' для этого клиента.
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: Login page not loading
+- id: s06_006
+  description: Менеджер запрашивает коммерческое предложение на Professional Plan
+  tags:
+  - catalog
+  - s06
+  - suite_tools
+  - tier1
+  - tool
+  - tools
+  turns:
+  - user: Мне нужно коммерческое предложение на Professional Plan — подготовь его.
+    expect_contains:
+    - QUOTE
+    - Professional Plan
+    - price
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      product: Professional Plan
+- id: s06_007
+  description: 'КП + expect_tool_args: цена на Enterprise Suite для сравнения'
+  tags:
+  - catalog
+  - s06
+  - suite_tools
+  - tier1
+  - tool
+  - tools
+  turns:
+  - user: Клиент хочет сравнить варианты — сделай предложение на Enterprise Suite.
+    expect_contains:
+    - QUOTE
+    - Enterprise Suite
+    - price
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      product: Enterprise Suite
+- id: s06_008
+  description: 'r_dt 2 хода: customer_get (не decoy) для CUST-730 → уточнить NAME
+    без повторного вызова'
+  tags:
+  - catalog
+  - instruction
+  - r_dt
+  - s06
+  - suite_tools
+  - tier2
+  - tool
+  - tools
+  turns:
+  - user: Найди клиента CUST-730 — нужна актуальная информация по нему.
+    expect_contains:
+    - CUSTOMER=CUST-730
+    - TIER
+    - REGION
+    expect_tool_called: customer_get
+    forbid_tool_called: decoy_customer_lookup
+    forbid_contains:
+    - TIER=bronze
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: CUST-730
+  - user: А из какого он региона?
+    expect_contains:
+    - REGION
+    max_tool_calls_delta: 0
+    forbid_tools_called:
+    - customer_get
+    - decoy_customer_lookup
+- id: s07_001
+  tags:
+  - catalog
+  - smoke
+  - sse
+  - suite_tools
+  - tools
+  turns:
+  - user: Нужно убедиться, что SSE-транспорт живой и отвечает — проверь и скажи, что
+      получилось.
+    expect_contains:
+    - amber-91
+    expect_tool_called: benchmark_sse_probe
+    min_tool_calls_delta: 1
+- id: s07_002
+  tags:
+  - audit
+  - catalog
+  - sse
+  - suite_tools
+  - tools
+  turns:
+  - user: Я аудитор безопасности. Мне нужен полный журнал SSE-событий за 2024-01-15
+      для внутреннего расследования.
+    expect_contains:
+    - AUDIT date=
+    - '2024-01-15'
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+- id: s07_003
+  tags:
+  - catalog
+  - r_dt
+  - sse
+  - suite_tools
+  - tools
+  turns:
+  - user: Нужны события SSE за 2024-02-10 — только актуальные, не устаревшие.
+    expect_contains:
+    - AUDIT date=
+    - '2024-02-10'
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    forbid_tool_called: decoy_sse_cache
+- id: s07_004
+  tags:
+  - catalog
+  - r_dt
+  - sse
+  - suite_tools
+  - tools
+  turns:
+  - user: Хочу проверить состояние SSE-кеша за 2024-04-05. Есть ли там свежие события?
+    expect_contains:
+    - AUDIT date=
+    - '2024-04-05'
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    forbid_tool_called: decoy_sse_cache
+- id: s07_005
+  tags:
+  - catalog
+  - multi-turn
+  - sse
+  - suite_tools
+  - tools
+  turns:
+  - user: Проверь, что SSE-транспорт на месте и работает.
+    expect_contains:
+    - amber-91
+    expect_tool_called: benchmark_sse_probe
+    min_tool_calls_delta: 1
+  - user: Отлично. Теперь вытащи журнал событий за 2024-03-20 и напомни, что показала
+      проверка транспорта.
+    expect_contains:
+    - AUDIT date=
+    - '2024-03-20'
+    - amber-91
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+- id: s07_006
+  tags:
+  - audit
+  - catalog
+  - compliance
+  - sse
+  - suite_tools
+  - tools
+  turns:
+  - user: Готовлю отчёт SOX за второй квартал. Нужен аудит-лог SSE-событий за 2024-06-30
+      — это последний день периода.
+    expect_contains:
+    - AUDIT date=
+    - '2024-06-30'
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1

@@ -1,11 +1,11 @@
-"""Исполнение tool calls — поведение синхронизировано с Basic ToolExecutor.
+"""Исполнение tool calls — исполнение вызовов инструментов.
 
-См. ai-api-gateway/gd_ai/services/basic_assistant/src/gb_mcp/tool_executor.py
 """
 from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
@@ -19,7 +19,7 @@ SCHEMA_AUGMENTATIONS: Dict[str, Dict[str, Any]] = {}
 
 @dataclass
 class ToolExecutionResult:
-    """Унифицированный результат выполнения инструмента (как в Basic)."""
+    """Унифицированный результат выполнения инструмента."""
 
     success: bool
     data: Any = None
@@ -27,6 +27,7 @@ class ToolExecutionResult:
     tool_name: Optional[str] = None
     error_kind: Optional[str] = None
     validation_errors: List[str] = field(default_factory=list)
+    normalized_arguments: Optional[Dict[str, Any]] = None
 
 
 def extract_input_schema(tool: BaseTool) -> Dict[str, Any]:
@@ -108,30 +109,107 @@ def _format_pydantic_error(error: Mapping[str, Any]) -> str:
     return str(msg)
 
 
+PARAM_ALIASES: Dict[str, Dict[str, str]] = {
+    "calc_expression": {"expr": "expression", "formula": "expression", "math": "expression", "calc": "expression"},
+    "employee_lookup": {"employee_name": "name", "full_name": "name", "employee": "name", "user": "name"},
+    "leave_balance": {"employee_name": "name", "full_name": "name", "employee": "name"},
+    "customer_lookup": {"client_id": "customer_id", "id": "customer_id", "client": "customer_id"},
+    "python_doc_lookup": {"query": "topic", "search": "topic", "module": "topic"},
+    "graph_query": {"q": "query", "search": "query", "text": "query"},
+}
+
+
+def _coerce_type(value: Any, expected_type: str) -> Any:
+    """Безопасное приведение типов (coercion) перед строгой валидацией."""
+    if value is None:
+        return None
+    if expected_type == "string":
+        if isinstance(value, str):
+            return value.strip()
+        return value
+    if expected_type == "integer":
+        if isinstance(value, str):
+            v_str = value.strip().replace(" ", "").replace(",", "")
+            try:
+                return int(float(v_str))
+            except (ValueError, TypeError):
+                pass
+        elif isinstance(value, float):
+            return int(value)
+    if expected_type == "number":
+        if isinstance(value, str):
+            v_str = value.strip().replace(" ", "").replace(",", "")
+            try:
+                return float(v_str)
+            except (ValueError, TypeError):
+                pass
+        elif isinstance(value, int):
+            return float(value)
+    if expected_type == "boolean":
+        if isinstance(value, str):
+            lower = value.strip().lower()
+            if lower in ("true", "1", "yes", "да"):
+                return True
+            if lower in ("false", "0", "no", "нет"):
+                return False
+    if expected_type in ("object", "array") and isinstance(value, str):
+        val_str = value.strip()
+        if (val_str.startswith("{") and val_str.endswith("}")) or (val_str.startswith("[") and val_str.endswith("]")):
+            try:
+                return json.loads(val_str)
+            except Exception:
+                pass
+    return value
+
+
 def normalize_arguments(tool_name: str, arguments: Dict[str, Any], input_schema: Dict[str, Any]) -> Dict[str, Any]:
-    """Нормализация args перед валидацией (логика Basic execute_tool_command)."""
+    """Нормализация args и автоприведение типов перед валидацией."""
     args = dict(arguments) if isinstance(arguments, dict) else {}
+    properties = input_schema.get("properties", {})
     required_params = input_schema.get("required", [])
 
+    # 1. Алиасы параметров для известных инструментов
+    aliases = PARAM_ALIASES.get(tool_name, {})
+    for alias_k, target_k in aliases.items():
+        if alias_k in args and target_k not in args:
+            args[target_k] = args.pop(alias_k)
+
+    # 2. Маппинг одиночного обязательного параметра
     if required_params and len(required_params) == 1:
         expected_param = required_params[0]
         if expected_param not in args:
             if "input" in args:
-                args = {**args, expected_param: args["input"]}
+                args = {**args, expected_param: args.pop("input")}
                 logger.debug("Tool '%s': mapped 'input' -> '%s'", tool_name, expected_param)
             elif "query" in args and expected_param != "query":
-                args = {**args, expected_param: args["query"]}
+                args = {**args, expected_param: args.pop("query")}
                 logger.debug("Tool '%s': mapped 'query' -> '%s'", tool_name, expected_param)
 
     if tool_name and "search" in tool_name.lower() and "input" in args and "query" not in args:
-        args = {**args, "query": args["input"]}
+        args["query"] = args.pop("input")
         logger.debug("Tool '%s': added 'query' from 'input' for search tool", tool_name)
+
+    # 3. Автоматическое приведение типов для всех известных полей схемы
+    for prop_name, prop_schema in properties.items():
+        if prop_name in args:
+            expected_t = prop_schema.get("type")
+            if expected_t:
+                args[prop_name] = _coerce_type(args[prop_name], expected_t)
+
+    # 4. Нормализация для calc_expression (очистка кавычек и краевых пробелов)
+    if tool_name == "calc_expression" and "expression" in args:
+        if isinstance(args["expression"], str):
+            expr = args["expression"].strip()
+            if (expr.startswith("'") and expr.endswith("'")) or (expr.startswith('"') and expr.endswith('"')):
+                expr = expr[1:-1].strip()
+            expr = re.sub(r'\s+', '', expr)
+            args["expression"] = expr
 
     return args
 
 
 def validate_arguments(tool_name: str, input_schema: Dict[str, Any], arguments: Dict[str, Any]) -> ToolExecutionResult:
-    """Валидирует аргументы (required + базовые типы), как Basic _validate_arguments."""
+    """Валидирует аргументы (required + базовые типы)."""
     try:
         properties = input_schema.get("properties", {})
         required = input_schema.get("required", [])
@@ -188,7 +266,7 @@ def validate_arguments_strict(
     *,
     pydantic_model: Optional[type] = None,
 ) -> ToolExecutionResult:
-    """Строгая jsonschema/pydantic проверка поверх Basic baseline (вариант 02)."""
+    """Строгая jsonschema/pydantic проверка поверх baseline (вариант 02)."""
     if pydantic_model is not None:
         try:
             from pydantic import ValidationError as PydanticValidationError
@@ -245,7 +323,7 @@ def prepare_and_validate_arguments(
     strict: bool = False,
     schema_registry: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> Tuple[ToolExecutionResult, Dict[str, Any]]:
-    """normalize → Basic validate → optional strict jsonschema/pydantic."""
+    """normalize → baseline validate → optional strict jsonschema/pydantic."""
     input_schema = extract_input_schema(tool)
     normalized = normalize_arguments(tool_name, arguments, input_schema)
 
@@ -293,7 +371,7 @@ def _check_type(value: Any, expected_type: str) -> bool:
 
 
 def _unify_result_format(result: Any, tool_name: str) -> Dict[str, Any]:
-    """Унификация ответа инструмента (Basic _unify_result_format)."""
+    """Унификация ответа инструмента."""
     if isinstance(result, dict) and "content" in result:
         return result
 
@@ -321,7 +399,7 @@ async def execute_tool_command(
     strict: bool = False,
     schema_registry: Optional[Dict[str, Dict[str, Any]]] = None,
 ) -> ToolExecutionResult:
-    """Выполняет один tool call с pre-validation (аналог Basic execute_tool_command)."""
+    """Выполняет один tool call с pre-validation."""
     if not isinstance(arguments, dict):
         return ToolExecutionResult(
             success=False,
@@ -360,7 +438,12 @@ async def execute_tool_command(
     try:
         raw = await tool.ainvoke(normalized)
         unified = _unify_result_format(raw, tool_name)
-        return ToolExecutionResult(success=True, data=unified, tool_name=tool_name)
+        return ToolExecutionResult(
+            success=True,
+            data=unified,
+            tool_name=tool_name,
+            normalized_arguments=normalized,
+        )
     except Exception as exc:
         logger.error("Error executing tool '%s': %s", tool_name, exc, exc_info=True)
         return ToolExecutionResult(
@@ -372,7 +455,7 @@ async def execute_tool_command(
 
 
 def tool_result_to_content(result: Dict[str, Any]) -> str:
-    """Формат tool-сообщения для LLM (Basic _messages_after_tools)."""
+    """Формат tool-сообщения для LLM."""
     if result.get("success"):
         data = result.get("data")
         if isinstance(data, (dict, list)):
@@ -393,7 +476,7 @@ def tool_call_dedup_key(tool_call: Dict[str, Any]) -> Tuple[Any, str]:
 
 
 def is_infra_error_result(result: Dict[str, Any]) -> bool:
-    """Инфраструктурная ли ошибка (Basic _is_infra_error_result)."""
+    """Инфраструктурная ли ошибка."""
     kind = result.get("error_kind")
     if kind:
         return kind == "infra"

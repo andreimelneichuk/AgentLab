@@ -1,4 +1,4 @@
-# Basic Agent — deterministic routing (05)
+# Baseline Agent Agent — deterministic routing (05)
 
 Вариант с rule-based router: intent → domain → filtered tools.
 

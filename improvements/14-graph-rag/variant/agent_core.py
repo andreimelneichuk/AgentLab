@@ -290,7 +290,7 @@ def tool_limits(config: Dict[str, Any]) -> Tuple[int, int, int]:
     limits = (config.get("tools") or {}).get("call_limit") or {}
     exec_retries = int(limits.get("tool_exec_fail_retries", 3))
     return (
-        int(limits.get("basic_rounds", 5)),
+        int(limits.get("tool_loop_rounds", limits.get("basic_rounds", 5))),
         int(limits.get("thread", 50)),
         exec_retries,
     )
@@ -398,6 +398,7 @@ class BasicLoopSession:
             "data": result.data if result.success else None,
             "error": result.error if not result.success else None,
             "error_kind": result.error_kind if not result.success else None,
+            "normalized_arguments": getattr(result, "normalized_arguments", None) or tool_args,
         }
 
     async def _execute_tool_calls(self, tool_calls: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -551,6 +552,14 @@ class BasicLoopSession:
                                 "tool_calls": tool_calls,
                             })
                             outcome, tool_results = await self._execute_tool_round(tool_calls)
+                            for tr in tool_results:
+                                if tr.get("normalized_arguments") is not None:
+                                    t_name = tr.get("tool_name")
+                                    norm_args = tr.get("normalized_arguments")
+                                    for td in reversed(turn_details):
+                                        if td["name"] == t_name:
+                                            td["arguments"] = norm_args
+                                            break
                             working.extend(self._tool_results_to_messages(tool_results))
                             if outcome == "finalize":
                                 break

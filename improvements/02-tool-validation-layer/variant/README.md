@@ -1,4 +1,4 @@
-# Basic Agent — tool validation layer (02)
+# Baseline Agent Agent — tool validation layer (02)
 
 Вариант с pre-execution валидацией аргументов MCP-инструментов.
 

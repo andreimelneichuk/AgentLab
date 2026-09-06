@@ -1,4 +1,4 @@
-# Basic Agent — subtask isolation variant
+# Baseline Agent Agent — subtask isolation variant
 
 Multi-agent orchestrator: изолированные субагенты по доменам MCP (core / hr / crm / sse).
 

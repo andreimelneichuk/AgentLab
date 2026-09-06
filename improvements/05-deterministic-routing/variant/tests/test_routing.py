@@ -33,6 +33,7 @@ from routing import (
 )
 
 CATALOG_DIR = Path(__file__).resolve().parents[4] / "benchmark" / "scenarios" / "catalog"
+SUITES_DIR = Path(__file__).resolve().parents[4] / "benchmark" / "scenarios" / "suites"
 
 
 class _FakeTool:
@@ -42,9 +43,10 @@ class _FakeTool:
 
 def _load_catalog_scenarios():
     scenarios = []
-    for path in sorted(glob.glob(str(CATALOG_DIR / "*.yaml"))):
-        data = yaml.safe_load(open(path, encoding="utf-8")) or {}
-        scenarios.extend(data.get("scenarios", []))
+    for p in (CATALOG_DIR, SUITES_DIR):
+        for path in sorted(glob.glob(str(p / "*.yaml"))):
+            data = yaml.safe_load(open(path, encoding="utf-8")) or {}
+            scenarios.extend(data.get("scenarios", []))
     return scenarios
 
 
@@ -196,3 +198,31 @@ def test_no_tools_recall_hint_does_not_remove_tools():
     assert route.is_recall_hint
     assert "employee_lookup" in route.allowed_tools
     assert "повтор" in route.prompt_fragment.lower() or "контекст" in route.prompt_fragment.lower()
+
+
+def test_graph_query_in_core_tools():
+    """graph_query всегда доступен в CORE_TOOLS и не блокируется роутером."""
+    assert "graph_query" in CORE_TOOLS
+    route = route_turn(RouterState(), "Подскажи, сколько в Engineering людей под активной политикой?")
+    assert "graph_query" in route.allowed_tools
+    assert is_tool_allowed("graph_query", route)
+
+
+def test_hr_find_phrases():
+    """Фразы вида 'Найди Frank Lee' корректно активируют HR-домен."""
+    state = RouterState()
+    route = route_turn(state, "Найди Frank Lee.")
+    assert "employee_lookup" in route.allowed_tools
+    assert Domain.HR in route.activated_domains
+
+
+def test_recall_phrases_trigger_hint():
+    """Расширенный список recall-фраз активирует is_recall_hint."""
+    for phrase in [
+        "Не вызывай инструмент, ответь по памяти.",
+        "Уже есть в диалоге, вспомни результат.",
+        "Напомни статус сервиса из прошлого сообщения.",
+    ]:
+        route = route_turn(RouterState(), phrase)
+        assert route.is_recall_hint, f"Фраза '{phrase}' должна триггерить is_recall_hint"
+

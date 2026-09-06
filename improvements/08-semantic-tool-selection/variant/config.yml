@@ -1,4 +1,4 @@
-# Минимальный конфиг для basic_agent.py
+# Конфигурация для базового агента
 
 llm_defaults:
   model_alias: "qwen-moe-local"
@@ -11,8 +11,8 @@ llm:
     vllm_local:
       type: vllm
       api_key: "EMPTY"
-      base_url: "http://localhost:8001/v1"
-      health_check_url: "http://localhost:8001/health"
+      base_url: "http://llm-server.local:8001/v1"
+      health_check_url: "http://llm-server.local:8001/health"
       request_timeout: 180
 
   models:
@@ -33,7 +33,7 @@ llm:
 
 tools:
   call_limit:
-    basic_rounds: 5
+    tool_loop_rounds: 5
     thread: 50
     tool_exec_fail_retries: 3
 

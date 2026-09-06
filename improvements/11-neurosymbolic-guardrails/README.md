@@ -82,7 +82,7 @@ Execute              Cancel + structured error → optional retry
 
 Правила живут **ниже** контроля LLM — их нельзя «забыть» через дрейф промпта.
 
-## Типы правил для Basic
+## Типы правил для Baseline Agent
 
 ### Pre-tool hooks
 
@@ -114,7 +114,7 @@ Execute              Cancel + structured error → optional retry
 
 Стек: **02 → 11 → execute**
 
-## Что менять в Basic
+## Что менять в Baseline Agent
 
 | Место | Действие |
 |-------|----------|
@@ -134,7 +134,7 @@ Execute              Cancel + structured error → optional retry
 
 ## Чеклист
 
-- [x] Каталог бизнес-правил Basic (HR, CRM, policy)
+- [x] Каталог бизнес-правил Baseline Agent (HR, CRM, policy)
 - [x] Pre-tool interceptor с deny/allow lists
 - [x] Post-tool: verify MCP status vs agent message
 - [x] Unit-тесты на каждое правило

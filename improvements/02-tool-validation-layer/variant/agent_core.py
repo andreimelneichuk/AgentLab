@@ -293,7 +293,7 @@ def tool_limits(config: Dict[str, Any]) -> Tuple[int, int, int]:
     limits = (config.get("tools") or {}).get("call_limit") or {}
     exec_retries = int(limits.get("tool_exec_fail_retries", 3))
     return (
-        int(limits.get("basic_rounds", 5)),
+        int(limits.get("tool_loop_rounds", limits.get("basic_rounds", 5))),
         int(limits.get("thread", 50)),
         exec_retries,
     )
@@ -410,6 +410,7 @@ class BasicLoopSession:
             "data": result.data if result.success else None,
             "error": result.error if not result.success else None,
             "error_kind": result.error_kind if not result.success else None,
+            "normalized_arguments": getattr(result, "normalized_arguments", None) or tool_args,
         }
 
     async def _execute_tool_calls(self, tool_calls: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -601,11 +602,6 @@ class BasicLoopSession:
                                 for tc in result.tool_calls
                             ]
                             all_tool_names.extend(tc["name"] for tc in tool_calls if tc["name"])
-                            for tc in tool_calls:
-                                turn_details.append({
-                                    "name": tc["name"],
-                                    "arguments": tc.get("arguments") or {},
-                                })
                             working.append({
                                 "role": "assistant",
                                 "content": result.content or "",
@@ -615,6 +611,11 @@ class BasicLoopSession:
                                 tool_calls,
                                 validation_attempt=validation_failures + 1,
                             )
+                            for r in raw_tool_results:
+                                turn_details.append({
+                                    "name": r.get("tool_name", ""),
+                                    "arguments": r.get("normalized_arguments") or {},
+                                })
                             tool_results = self._tool_results_to_messages(raw_tool_results)
                             working.extend(tool_results)
                             had_validation_failure = any(

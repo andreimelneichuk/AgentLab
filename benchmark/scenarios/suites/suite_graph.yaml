@@ -1,0 +1,201 @@
+scenarios:
+- id: graph_001
+  description: Сколько сотрудников Engineering с активной политикой Remote Work
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Подскажи, сколько в Engineering людей под активной политикой Remote Work?
+    expect_contains:
+    - '1'
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_002
+  description: Подсчёт сотрудников в несуществующем отделе Legal (пустой граф)
+  tags:
+  - suite_graph
+  - graph
+  - r_nta
+  config_override:
+    mcp_servers: {}
+  turns:
+  - user: А в Legal кто-нибудь на Remote Work сидит? Сколько их?
+    expect_contains:
+    - нет
+    - не могу
+    - пуст
+    - '0'
+    - отсутств
+    expect_contains_mode: any
+    forbid_tool_called: decoy_policy_fact
+- id: graph_003
+  description: Список сотрудников HR без выдуманных имён
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Кто у нас в HR работает? Можешь перечислить поимённо?
+    expect_contains:
+    - Carol
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_004
+  description: Количество сотрудников в отделе Sales
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Сколько сотрудников числится в отделе Sales?
+    expect_contains:
+    - '1'
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_005
+  description: Кто из сотрудников покрыт страховкой Health Insurance
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Кто из наших сотрудников подключен к программе Health Insurance?
+    expect_contains:
+    - Bob
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_006
+  description: Статус политики Legacy Benefits
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Какой текущий статус у корпоративной политики Legacy Benefits?
+    expect_contains:
+    - inactive
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_007
+  description: Проверка покрытия Alice политикой Health Insurance
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Сотрудник Alice покрыта страховкой Health Insurance?
+    expect_contains:
+    - нет
+    - не покрыт
+    - не подключ
+    - remote work
+    expect_contains_mode: any
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_008
+  description: Список всех активных корпоративных политик в графе
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Какие корпоративные политики сейчас имеют статус active?
+    expect_contains:
+    - Remote Work
+    - Health Insurance
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_009
+  description: К какому отделу прикреплен Bob
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: В каком департаменте числится сотрудник Bob?
+    expect_contains:
+    - Engineering
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_010
+  description: Кто из отдела Engineering имеет страховку Health Insurance
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Кто из департамента Engineering имеет страховку Health Insurance?
+    expect_contains:
+    - Bob
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_011
+  description: Проверка прикрепления сотрудника Dave
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Какой табельный номер или ID у сотрудника Dave из отдела Sales?
+    expect_contains:
+    - HR-004
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_012
+  description: Проверка политики сотрудника Dave
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Какая политика привязана к Dave из Sales?
+    expect_contains:
+    - Legacy Benefits
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_013
+  description: Запрос несуществующего отдела Marketing
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Сколько человек работает в отделе Marketing?
+    expect_contains:
+    - '0'
+    - нет
+    - не найден
+    - пуст
+    expect_contains_mode: any
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+- id: graph_014
+  description: 'Multi-turn: запрос сотрудников HR и последующий recall'
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Напомни, кто работает в HR отделе?
+    expect_contains:
+    - Carol
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1
+  - user: А какой у неё был ID?
+    expect_contains:
+    - HR-003
+    max_tool_calls_delta: 0
+- id: graph_015
+  description: 'Политики Carol: проверка двух связей одновременно'
+  tags:
+  - suite_graph
+  - graph
+  - graph_rag
+  turns:
+  - user: Какие политики привязаны к Carol из HR?
+    expect_contains:
+    - Remote Work
+    - Health Insurance
+    expect_tool_called: graph_query
+    min_tool_calls_delta: 1

@@ -17,6 +17,11 @@ def load_agent_module(variant_dir: Path) -> ModuleType:
         sys.path.remove(path)
     sys.path.insert(0, path)
 
+    # Invalidate variant-specific cached modules so each variant loads its own files
+    for mod in list(sys.modules.keys()):
+        if mod in ("agent_core", "tool_executor", "basic_agent"):
+            sys.modules.pop(mod, None)
+
     import agent_core
 
     return importlib.reload(agent_core)

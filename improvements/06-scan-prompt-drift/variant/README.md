@@ -1,4 +1,4 @@
-# Basic Agent — variant 06 (SCAN)
+# Baseline Agent Agent — variant 06 (SCAN)
 
 Доработка против дрейфа системного промпта: метод SCAN.
 

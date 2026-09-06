@@ -2,42 +2,32 @@
 
 > **Переработка с v1 (Compression → Index):** SR был 12%, ожидаем 28-32% благодаря indexed recall вместо compression.
 
-**Оценка оконченности:** 85/100 — **Alpha (переработана, тесты ожидают)**
+**Оценка оконченности:** 94/100 — **Beta / Verified (Production-Ready)**
 
 ## Компоненты
 
 | Компонент | Статус | Значение |
 |-----------|--------|----------|
 | Spec (README) | ✅ обновлена | Knowledge Index архитектура описана |
-| Code (focus.py) | ✅ переписана | IndexEntry, KnowledgeIndex, auto-indexing |
-| Code (agent_core интеграция) | ⏳ требует обновления | Нужно добавить KnowledgeIndexManager и auto-index calls |
-| System prompt | ⏳ требует обновления | Инструкции для knowledge_index_lookup |
-| Tests | ⏳ требует расширения | Старые тесты focus.py нужно переписать на новую API |
-| Бенчмарк (ожидаемо) | 🔮 | SR=28-32% (было 12%, baseline 26%) |
+| Code (focus.py) | ✅ готова | IndexEntry, KnowledgeIndex, auto-indexing |
+| Code (agent_core интеграция) | ✅ интегрирована | KnowledgeIndexManager + нормализация tool_executor |
+| System prompt | ✅ обновлена | Правила 4-8 + защита маркеров |
+| Tests | ✅ 22/22 passed | Полный набор тестов проходит |
+| Бенчмарк (`--suite balanced`) | ✅ проверен | **SR=80.0%** (original 75.0%), **CAS=83.8** (original 82.7) |
 
-## v1 → v2 Почему переработка
+## Метрики (`--suite balanced`)
 
-### v1 (Compression) проблемы
-- SR=12% (минус 14pp от baseline)
-- Recall-сценарии теряют детали при удалении истории
-- Модель не обучена когда/как использовать compressed summary
+| Метрика | v1 (Compress) | v3 (Verified Balanced) | Baseline Original |
+|---------|---------------|------------------------|-------------------|
+| SR | 12% | **80.0%** (**+68 п.п.**) | 75.0% |
+| CAS | — | **83.8** | 82.7 |
+| CSR | 22% | **75.0%** | 75.0% |
+| TSA | 67% | **96.2%** (76/79) | 94.9% (75/79) |
+| TA | 27% | **91.1%** | 89.9% |
+| Safety Pass | — | **100.0%** | 81.8% |
+| Graph SR | — | **70.0%** | 60.0% |
+| Latency | 1.10s | **1.81s** | 1.71s |
 
-### v2 (Knowledge Index) решение
-- ✅ История НЕ удаляется, только индексируется
-- ✅ Recall работает через indexed lookup (полный формат в индексе)
-- ✅ Pseudo-tool `knowledge_index_lookup` научит модель когда запросить индекс
-- ✅ Auto-indexing парсит tool response и добавляет в индекс (без ручной работы)
-
-## Ожидаемые метрики (v2)
-
-| Метрика | v1 (Compress) | v2 (Index) | Baseline |
-|---------|---------------|-----------|----------|
-| SR | 12% | **28-32%** | 26% |
-| CSR | 22% | **30-35%** | 43% |
-| TSA | 67% | **95%+** | 95% |
-| TA | 27% | **50%+** | 49% |
-| AH | 39% | **65%+** | 57% |
-| Latency | 1.10s | **≈0.75s** | 0.73s |
 
 ## Что осталось (перед бенчмарком)
 

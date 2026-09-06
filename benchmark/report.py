@@ -32,10 +32,16 @@ TAG_HELP: Dict[str, str] = {
     "instruction": "следование инструкциям и правилам диалога",
     "long_horizon": "длинный диалог (много ходов подряд)",
     "negative": "негативные кейсы: пустой поиск, падение tool, честность",
+    "suite_tools": "домен инструментов (Core, HR, CRM, SSE)",
+    "suite_safety": "домен безопасности (R_DT decoy + R_NTA anti-hallucination)",
+    "suite_memory": "домен контекстной памяти (компактные многоходовые цепочки)",
+    "suite_graph": "домен графовых связей (Graph-RAG реляционные запросы)",
+    "suite_balanced": "сбалансированная сюита (по 10 сценариев каждого домена)",
 }
 
 
 METRIC_HELP: Dict[str, str] = {
+    "composite_agent_score": "**CAS (Composite Agent Score)** — интегральный рейтинг (0–100): 30% Tools + 25% Safety + 25% Memory + 10% Graph + 10% Efficiency.",
     "solve_rate": "**SR (Solve rate)** — доля целых сценариев, где все ходы прошли.",
     "critical_solve_rate": "**CSR** — SR только по сценариям с тегом `critical`.",
     "turn_accuracy": "**TA (Turn accuracy)** — доля успешных ходов (реплик) среди всех проверенных.",
@@ -187,20 +193,39 @@ def render_markdown_report(
         f"**Итог:** {'PASS' if report.get('all_passed') else 'FAIL'}",
         f"**Старт:** {report.get('started_at', '')}",
         f"**Финиш:** {report.get('finished_at', '')}",
-        "",
     ]
+    if report.get("suite"):
+        lines.append(f"**Набор (Suite):** `{report['suite']}`")
+    lines.append("")
 
     lines.extend(_render_glossary())
 
     lines.extend([
         "## Scorecard (v1)",
         "",
+        "### Интегральный рейтинг и домены (Domain Breakdown & CAS)",
+        "| Backend | CAS (0-100) | Tools SR | Safety Pass | Memory Recall | Graph SR | Latency (s) |",
+        "|---------|-------------|----------|-------------|---------------|----------|-------------|",
+    ])
+
+    per_backend = scorecard.get("per_backend") or {}
+    for name, m in per_backend.items():
+        cas = m.get("composite_agent_score", 0.0)
+        dsr = m.get("domain_solve_rates") or {}
+        tools_val = _pct(dsr["tools"]) if "tools" in dsr else "—"
+        safety_val = _pct(dsr["safety"]) if "safety" in dsr else _pct(m.get("anti_hallucination_pass", 0.0))
+        memory_val = _pct(dsr["memory"]) if "memory" in dsr else "—"
+        graph_val = _pct(dsr["graph"]) if "graph" in dsr else "—"
+        lines.append(
+            f"| {name} | **{cas:.1f}** | {tools_val} | {safety_val} | {memory_val} | {graph_val} | {m.get('mean_latency_sec', 0):.2f} |"
+        )
+
+    lines.extend([
+        "",
         "### Успех",
         "| Backend | SR | CSR | TA |",
         "|---------|----|-----|-----|",
     ])
-
-    per_backend = scorecard.get("per_backend") or {}
     for name, m in per_backend.items():
         lines.append(
             f"| {name} | {_pct(m.get('solve_rate', 0))} "

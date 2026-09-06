@@ -79,21 +79,66 @@ def translate_text_result(text: str, target_lang: str) -> str:
 
 
 def graph_query_result(query: str) -> str:
-    """Ответ graph_query по ключевым словам запроса."""
+    """Ответ graph_query по ключевым словам запроса на основе графа организации."""
     q = query.lower()
-    if "legal" in q:
+    if "legal" in q or "marketing" in q:
         return '{"status": "empty", "count": 0, "results": []}'
-    if "hr" in q and any(w in q for w in ("list", "перечисл", "сотрудник", "employee")):
+    if "legacy" in q and ("статус" in q or "status" in q or "benefit" in q):
+        return '{"status": "ok", "policy": "Legacy Benefits", "policy_status": "inactive"}'
+    if "active" in q and ("политик" in q or "policy" in q):
+        return (
+            '{"status": "ok", "active_policies": ["Remote Work", "Health Insurance"], '
+            '"inactive_policies": ["Legacy Benefits"]}'
+        )
+    if "carol" in q and ("политик" in q or "policy" in q or "страхов" in q or "remote" in q):
+        return (
+            '{"status": "ok", "name": "Carol", "employee_id": "HR-003", "department": "HR", '
+            '"policies": [{"name": "Remote Work", "status": "active"}, {"name": "Health Insurance", "status": "active"}]}'
+        )
+    if "alice" in q and ("health" in q or "страхов" in q):
+        return (
+            '{"status": "ok", "name": "Alice", "employee_id": "HR-001", "department": "Engineering", '
+            '"covered_by_health_insurance": false, "active_policy": "Remote Work"}'
+        )
+    if "dave" in q:
+        return (
+            '{"status": "ok", "count": 1, "results": [{"name": "Dave", "employee_id": "HR-004", '
+            '"department": "Sales", "policy": "Legacy Benefits", "policy_status": "inactive"}]}'
+        )
+    if "bob" in q:
+        return (
+            '{"status": "ok", "count": 1, "results": [{"name": "Bob", "employee_id": "HR-002", '
+            '"department": "Engineering", "policy": "Health Insurance", "policy_status": "active"}]}'
+        )
+    if "sales" in q and any(w in q for w in ("count", "сколько", "сотрудник", "people", "число")):
+        return (
+            '{"status": "ok", "count": 1, "results": [{"name": "Dave", "employee_id": "HR-004", '
+            '"department": "Sales"}]}'
+        )
+    if "health" in q and "engineering" in q:
+        return (
+            '{"status": "ok", "count": 1, "results": [{"name": "Bob", "employee_id": "HR-002", '
+            '"department": "Engineering", "policy": "Health Insurance"}]}'
+        )
+    if "health" in q and any(w in q for w in ("кто", "сотрудник", "list", "все", "программ")):
+        return (
+            '{"status": "ok", "count": 2, "results": ['
+            '{"name": "Bob", "employee_id": "HR-002", "department": "Engineering"}, '
+            '{"name": "Carol", "employee_id": "HR-003", "department": "HR"}]}'
+        )
+    if "hr" in q and any(w in q for w in ("list", "перечисл", "сотрудник", "employee", "кто", "напомни")):
         return (
             '{"status": "ok", "count": 1, '
-            '"results": [{"name": "Carol", "employee_id": "HR-003", "department": "HR"}]}'
+            '"results": [{"name": "Carol", "employee_id": "HR-003", "department": "HR", '
+            '"policies": ["Remote Work", "Health Insurance"]}]}'
         )
     if "engineering" in q and "remote" in q:
         return (
             '{"status": "ok", "count": 1, '
-            '"results": [{"name": "Alice", "employee_id": "HR-001", "department": "Engineering"}]}'
+            '"results": [{"name": "Alice", "employee_id": "HR-001", "department": "Engineering", "policy": "Remote Work"}]}'
         )
     return '{"status": "ok", "count": 1, "results": []}'
+
 
 
 def register_core_tools(mcp: FastMCP) -> None:

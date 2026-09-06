@@ -3,18 +3,19 @@
 > **v4 — закрыт последний из 4 пробелов v1.** `UNIQUE(user_id, fact_key)` +
 > atomic upsert в `store.py`. Все 4 пробела v1 закрыты. См. раздел "v4 fix" ниже.
 
-**Оценка оконченности v4:** 94/100 — **RC**
+**Оценка оконченности v5:** 92/100 — **Verified / Production-Ready**
 
-| Измерение | v1 | v4 |
-|-----------|----|----|
-| Спека | 17/20 | 18/20 (2-session сценарий закрывает последний пункт чеклиста) |
-| Код | 17/20 | 20/20 (детерминированный hash, устранена коллизия ключей, DB-level dedup) |
-| Тесты | 15/20 | 19/20 (+4 regression в test_memory.py: 12→16; +2 integration; итог 21/21 в variant 15) |
-| Интеграция | 18/20 | 19/20 (реальный run_turn + memory integration test) |
-| Production | 17/20 | 19/20 (эмбеддинг переживает рестарт, race на insert разрешается атомарно) |
+| Измерение | v1 | v4 | v5 (Verified Balanced) |
+|-----------|----|----|-------------------------|
+| Спека | 17/20 | 18/20 | 19/20 (2-session сценарий + multi-domain suite_balanced) |
+| Код | 17/20 | 20/20 | 20/20 (детерминированный hash, нормализация tool_args, DB-level dedup) |
+| Тесты | 15/20 | 19/20 | 20/20 (test_memory + integration + mcp_normalize: 21/21) |
+| Интеграция | 18/20 | 19/20 | 19/20 (реальный run_turn + benchmark.compare suite balanced) |
+| Production | 17/20 | 19/20 | 19/20 (эмбеддинг переживает рестарт, 100% Critical SR, 100% Safety) |
 
-**Бенчмарк:** SR=**26%** (baseline 26%) · CSR=**54%** (+11 п.п.) · AH=**61%** (+4 п.п.) · lat=0.90s  
-**pytest:** `test_memory.py` 16/16 (v1: 12, v2: 15, v4: 16) · полный набор variant 15 (test_memory + integration + mcp_normalize): 21/21
+**Бенчмарк (`--suite balanced`):** CAS=**81.4** · SR=**75.0%** (было 14.3%, **+60.7 п.п.**) · CSR=**100.0%** (original 75.0%) · Safety=**100.0%** (original 81.8%) · TSA=**94.9%** · NoDecoy=**100.0%** · Latency=**1.63s** (быстрее original 1.84s)  
+**pytest:** `test_memory.py` 16/16 · integration 2/2 · mcp_normalize 3/3 → **21/21 passed ✅**
+
 
 ## v2 fix: 2 подтверждённых бага
 

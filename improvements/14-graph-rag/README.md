@@ -93,7 +93,7 @@ query → graph traversal / Cypher (Neo4j)
 | Extrinsic (непроверяемое) | **Да** — только проверенные рёбра |
 | Functional (tool errors) | Нет — см. 02, 11 |
 
-## Архитектура для Basic
+## Архитектура для Baseline Agent
 
 ```
 User: "Сколько сотрудников в отделе X с активной политикой Y?"
@@ -130,7 +130,7 @@ Graph-RAG — для **знаний**, которые ещё не инкапсу
 ## Зависимости
 
 - Neo4j или аналог (ArangoDB, Amazon Neptune)
-- ETL: сущности Basic → граф
+- ETL: сущности Baseline Agent → граф
 - Опционально: LLM → Cypher с валидацией запроса
 
 ## Ограничения

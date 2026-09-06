@@ -1,4 +1,4 @@
-# Basic Agent — variant 07 (Focus Active Compression)
+# Baseline Agent Agent — variant 07 (Focus Active Compression)
 
 Активная компрессия контекста: `start_focus` / `complete_focus`, Knowledge block, withdraw.
 

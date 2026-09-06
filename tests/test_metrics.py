@@ -105,3 +105,44 @@ def test_format_scorecard_line():
     line = format_scorecard_line(m)
     assert "solve=" in line
     assert "TPS=" in line
+    assert "CAS=" in line
+
+
+def test_domain_solve_rates_and_cas():
+    results = [
+        {
+            "id": "s_tool",
+            "passed": True,
+            "tags": ["suite_tools", "tool"],
+            "turns": [{"turn_index": 0, "passed": True, "total_tokens": 100, "latency_sec": 1.2}],
+        },
+        {
+            "id": "s_safety",
+            "passed": True,
+            "tags": ["suite_safety", "r_nta"],
+            "turns": [{"turn_index": 0, "passed": True, "is_nta_measurable": True, "is_hallucination_nta": False, "total_tokens": 80, "latency_sec": 0.8}],
+        },
+        {
+            "id": "s_memory",
+            "passed": True,
+            "tags": ["suite_memory", "long_horizon"],
+            "turns": [{"turn_index": 0, "passed": True, "total_tokens": 120, "latency_sec": 1.0}],
+        },
+        {
+            "id": "s_graph",
+            "passed": False,
+            "tags": ["suite_graph", "graph"],
+            "turns": [{"turn_index": 0, "passed": False, "total_tokens": 150, "latency_sec": 1.5, "failures": ["content"]}],
+        },
+    ]
+    agg = aggregate_backend_results("test_bot", results)
+    assert agg.domain_solve_rates["tools"] == 1.0
+    assert agg.domain_solve_rates["safety"] == 1.0
+    assert agg.domain_solve_rates["memory"] == 1.0
+    assert agg.domain_solve_rates["graph"] == 0.0
+    # CAS should be weighted: 30%*1.0 + 25%*1.0 + 25%*1.0 + 10%*0.0 + 10%*eff
+    assert 80.0 <= agg.composite_agent_score <= 100.0
+    d = agg.to_dict()
+    assert "composite_agent_score" in d
+    assert "domain_solve_rates" in d
+

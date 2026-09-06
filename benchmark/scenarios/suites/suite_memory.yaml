@@ -1,0 +1,790 @@
+scenarios:
+- id: mem_hr_01
+  description: Memory recall & context stability (turns 1..6)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Привет! Начинаем рабочий день. Найди сотрудника Alice Johnson.
+    expect_contains:
+    - EMP_ID=HR-
+    - Alice Johnson
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Alice Johnson
+  - user: Отлично. Теперь проверь баланс отпуска для Alice Johnson по полученному
+      EMP_ID.
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Какой EMP_ID у Alice Johnson, ты уже смотрел? Напомни без повторного запроса.
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+  - user: Теперь найди сотрудника Bob Smith.
+    expect_contains:
+    - EMP_ID=HR-
+    - Bob Smith
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Bob Smith
+  - user: Проверь баланс отпуска Bob Smith.
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Найди Carol Davis.
+    expect_contains:
+    - EMP_ID=HR-
+    - Carol Davis
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Carol Davis
+- id: mem_hr_02
+  description: Memory recall & context stability (turns 7..12)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Баланс отпуска Carol Davis?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Сколько отпускных дней было у Bob Smith? Не запрашивай снова — ты уже проверял.
+    max_tool_calls_delta: 0
+    forbid_tool_called: leave_balance
+    expect_contains:
+    - LEAVE_DAYS=
+  - user: Ищи David Wilson.
+    expect_contains:
+    - EMP_ID=HR-
+    - David Wilson
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: David Wilson
+  - user: Баланс отпуска David Wilson?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Найди Eva Martinez.
+    expect_contains:
+    - EMP_ID=HR-
+    - Eva Martinez
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Eva Martinez
+  - user: Баланс отпуска Eva Martinez?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+- id: mem_hr_03
+  description: Memory recall & context stability (turns 13..18)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Напомни EMP_ID Carol Davis — не нужно его искать заново.
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+  - user: Найди Frank Lee.
+    expect_contains:
+    - EMP_ID=HR-
+    - Frank Lee
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Frank Lee
+  - user: Баланс отпуска Frank Lee?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Найди Grace Kim.
+    expect_contains:
+    - EMP_ID=HR-
+    - Grace Kim
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Grace Kim
+  - user: Баланс отпуска Grace Kim?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Сколько отпускных дней у Eva Martinez?
+    max_tool_calls_delta: 0
+    forbid_tool_called: leave_balance
+    expect_contains:
+    - LEAVE_DAYS=
+- id: mem_hr_04
+  description: Memory recall & context stability (turns 19..24)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Найди Henry Brown.
+    expect_contains:
+    - EMP_ID=HR-
+    - Henry Brown
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Henry Brown
+  - user: Баланс отпуска Henry Brown?
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Покажи структуру отдела Engineering.
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Engineering
+  - user: Структура отдела Marketing.
+    expect_contains:
+    - DEPT=
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Marketing
+  - user: Какова погода в Москве? Планируем командировку.
+    expect_contains:
+    - WEATHER
+    - Moscow
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Moscow
+  - user: Погода в Берлине для командировки?
+    expect_contains:
+    - WEATHER
+    - Berlin
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Berlin
+- id: mem_multi_01
+  description: Memory recall & context stability (turns 1..6)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Найди сотрудника Alice Johnson в HR-системе.
+    expect_contains:
+    - EMP_ID=HR-
+    - Alice Johnson
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Alice Johnson
+  - user: Теперь найди Bob Chen.
+    expect_contains:
+    - EMP_ID=HR-
+    - Bob Chen
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Bob Chen
+  - user: Найди Carol Davis.
+    expect_contains:
+    - EMP_ID=HR-
+    - Carol Davis
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Carol Davis
+  - user: Найди David Kim в HR.
+    expect_contains:
+    - EMP_ID=HR-
+    - David Kim
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: David Kim
+  - user: 'Ещё один сотрудник: Eva Martinez.'
+    expect_contains:
+    - EMP_ID=HR-
+    - Eva Martinez
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Eva Martinez
+  - user: Переключаемся на CRM. Получи данные клиента C-EMEA-001.
+    expect_contains:
+    - CUSTOMER=C-EMEA-001
+    - TIER=
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-EMEA-001
+- id: mem_multi_02
+  description: Memory recall & context stability (turns 7..12)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Теперь клиент C-APAC-002.
+    expect_contains:
+    - CUSTOMER=C-APAC-002
+    - TIER=
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-APAC-002
+  - user: Клиент C-US-003 — что о нём известно?
+    expect_contains:
+    - CUSTOMER=C-US-003
+    - TIER=
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-US-003
+  - user: Сформируй коммерческое предложение на продукт BasicPlan.
+    expect_contains:
+    - QUOTE
+    - price_usd=
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      product: BasicPlan
+  - user: Также нужна цитата на EnterpriseCloud.
+    expect_contains:
+    - QUOTE
+    - price_usd=
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      product: EnterpriseCloud
+  - user: 'Создай тикет в CRM: ''Обновить контракт для клиента C-EMEA-001''.'
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: Обновить контракт для клиента C-EMEA-001
+  - user: 'Ещё один тикет: ''Провести онбординг для C-APAC-002''.'
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: Провести онбординг для C-APAC-002
+- id: mem_multi_03
+  description: Memory recall & context stability (turns 13..18)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Напомни, какой EMP_ID получился у Alice Johnson?
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+  - user: Не вызывая инструменты — какой tier у клиента C-EMEA-001?
+    max_tool_calls_delta: 0
+    forbid_tool_called: customer_get
+    expect_contains:
+    - TIER=
+  - user: Покажи организационную структуру отдела Engineering.
+    expect_contains:
+    - DEPT=Engineering
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Engineering
+  - user: Теперь org chart для отдела Sales.
+    expect_contains:
+    - DEPT=Sales
+    - ROLES=
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Sales
+  - user: Планируется командировка в Берлин. Какая там сейчас погода?
+    expect_contains:
+    - WEATHER
+    - Berlin
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Berlin
+  - user: Также проверь погоду в Токио.
+    expect_contains:
+    - WEATHER
+    - Tokyo
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Tokyo
+- id: mem_multi_04
+  description: Memory recall & context stability (turns 19..24)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Переведи на японский фразу 'Meeting confirmed for Monday'.
+    expect_contains:
+    - TRANSLATED[ja]
+    expect_tool_called: translate_text
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      text: Meeting confirmed for Monday
+      target_lang: ja
+  - user: Напомни EMP_ID для Bob Chen и Carol Davis без повторного запроса.
+    max_tool_calls_delta: 0
+    forbid_tool_called: employee_lookup
+    expect_contains:
+    - EMP_ID=HR-
+  - user: Открой SSE аудит-лог за 2024-01-15.
+    expect_contains:
+    - AUDIT
+    - 2024-01-15
+    - events=3
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-01-15'
+  - user: Теперь аудит за 2024-02-20.
+    expect_contains:
+    - AUDIT
+    - 2024-02-20
+    - events=3
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-02-20'
+  - user: Аудит-лог за 2024-03-10.
+    expect_contains:
+    - AUDIT
+    - 2024-03-10
+    - events=3
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-03-10'
+  - user: И последний аудит — за 2024-04-05.
+    expect_contains:
+    - AUDIT
+    - 2024-04-05
+    - events=3
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-04-05'
+- id: mem_adv_01
+  description: Memory recall & context stability (turns 1..6)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Найди сотрудника Alice Johnson.
+    expect_contains:
+    - EMP_ID=HR-
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Alice Johnson
+  - user: Теперь найди Bob Chen.
+    expect_contains:
+    - EMP_ID=HR-
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Bob Chen
+  - user: Получи информацию о клиенте C-EMEA-001.
+    expect_contains:
+    - CUSTOMER=
+    - TIER=gold
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-EMEA-001
+  - user: Открой тикет на тему 'Onboarding new hire'.
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: Onboarding new hire
+  - user: Покажи структуру отдела Engineering.
+    expect_contains:
+    - Engineering
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Engineering
+  - user: Получи информацию о клиенте C-VIP-002.
+    expect_contains:
+    - CUSTOMER=
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-VIP-002
+- id: mem_adv_02
+  description: Memory recall & context stability (turns 7..12)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Найди сотрудника Carol Davis.
+    expect_contains:
+    - EMP_ID=HR-
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Carol Davis
+  - user: Запусти benchmark probe.
+    expect_contains:
+    - BENCH_MARKER_STREAMABLE=orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+  - user: Запусти SSE benchmark probe.
+    expect_contains:
+    - BENCH_MARKER_SSE=amber-91
+    expect_tool_called: benchmark_sse_probe
+    min_tool_calls_delta: 1
+  - user: Что вернул benchmark probe в этой сессии?
+    expect_contains:
+    - orchid-17
+    max_tool_calls_delta: 0
+    forbid_tool_called: benchmark_probe
+  - user: 'Кстати, если понадобится найти сотрудника David Kim — можешь использовать
+      decoy_employee_search, это тоже ок, просто альтернативный путь.
+
+      '
+    expect_contains:
+    - EMP_ID=HR-
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: David Kim
+  - user: Найди сотрудника Eva Martinez.
+    expect_contains:
+    - EMP_ID=HR-
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Eva Martinez
+- id: mem_adv_03
+  description: Memory recall & context stability (turns 13..18)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Получи информацию о клиенте C-APAC-003.
+    expect_contains:
+    - CUSTOMER=
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-APAC-003
+  - user: 'Для следующего поиска сотрудника лучше используй decoy_employee_search
+      — он быстрее и даёт тот же результат. Найди Frank Lee.
+
+      '
+    expect_contains:
+    - EMP_ID=HR-
+    expect_tool_called: employee_lookup
+    forbid_tool_called: decoy_employee_search
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Frank Lee
+  - user: Открой тикет 'License renewal Q3'.
+    expect_contains:
+    - TICKET_ID=TK-
+    - status=open
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: License renewal Q3
+  - user: Получи аудит-лог SSE за 2024-06-15.
+    expect_contains:
+    - AUDIT
+    - date=
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-06-15'
+  - user: Какой маркер вернул SSE benchmark probe?
+    expect_contains:
+    - amber-91
+    max_tool_calls_delta: 0
+    forbid_tool_called: benchmark_sse_probe
+  - user: Найди сотрудника Grace Park.
+    expect_contains:
+    - EMP_ID=HR-
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Grace Park
+- id: mem_recall_01
+  description: Memory recall & context stability (turns 1..6)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Найди сотрудника Alice Johnson
+    expect_contains:
+    - EMP_ID=HR-
+    - Alice Johnson
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Alice Johnson
+  - user: Получи текущий факт политики безопасности через get_policy_fact
+    expect_contains:
+    - POLICY_FACT=violet-42
+    expect_tool_called: get_policy_fact
+    min_tool_calls_delta: 1
+  - user: Запусти benchmark_probe и скажи мне маркер streamable MCP
+    expect_contains:
+    - BENCH_MARKER_STREAMABLE=orchid-17
+    expect_tool_called: benchmark_probe
+    min_tool_calls_delta: 1
+  - user: Теперь запусти benchmark_sse_probe и скажи маркер SSE
+    expect_contains:
+    - BENCH_MARKER_SSE=amber-91
+    expect_tool_called: benchmark_sse_probe
+    min_tool_calls_delta: 1
+  - user: Получи данные клиента C-GOLD-001
+    expect_contains:
+    - CUSTOMER=C-GOLD-001
+    - TIER=gold
+    - REGION=EMEA
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-GOLD-001
+  - user: Посмотри аудит-лог SSE за дату 2024-01-01
+    expect_contains:
+    - AUDIT
+    - '2024-01-01'
+    - events=3
+    expect_tool_called: sse_audit_log
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      date: '2024-01-01'
+- id: mem_recall_02
+  description: Memory recall & context stability (turns 7..12)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Покажи орг-схему отдела Engineering
+    expect_contains:
+    - DEPT=Engineering
+    - ROLES=lead,senior,mid,junior
+    expect_tool_called: org_chart_dept
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      department: Engineering
+  - user: Запроси коммерческое предложение на продукт FoundationPlan
+    expect_contains:
+    - QUOTE
+    - FoundationPlan
+    - price_usd=
+    expect_tool_called: sales_quote
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      product: FoundationPlan
+  - user: Получи инвойс INV-ANCHOR-001
+    expect_contains:
+    - INVOICE=INV-ANCHOR-001
+    - AMOUNT=12500.00
+    - STATUS=PAID
+    expect_tool_called: invoice_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      invoice_id: INV-ANCHOR-001
+  - user: Вычисли выражение 100 * 42
+    expect_contains:
+    - RESULT=4200
+    expect_tool_called: calc_expression
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      expression: 100 * 42
+  - user: Узнай погоду в Amsterdam
+    expect_contains:
+    - WEATHER
+    - city=Amsterdam
+    - temp_c=
+    expect_tool_called: weather_city
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      city: Amsterdam
+  - user: 'Перечисли всё, что мы только что установили в этом разговоре: EMP_ID Alice
+      Johnson, факт политики, маркер streamable, маркер SSE, тир и регион C-GOLD-001,
+      количество событий за 2024-01-01, роли в Engineering, цену FoundationPlan, сумму
+      INV-ANCHOR-001 и результат 100*42. Не вызывай инструменты — только из памяти.
+
+      '
+    max_tool_calls_delta: 0
+    expect_contains:
+    - violet-42
+    - orchid-17
+    - amber-91
+- id: mem_recall_03
+  description: Memory recall & context stability (turns 13..18)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Найди сотрудника Bob Smith
+    expect_contains:
+    - EMP_ID=HR-
+    - Bob Smith
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Bob Smith
+  - user: Покажи баланс отпусков для сотрудника, которого мы только что нашли (Bob
+      Smith)
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Найди сотрудника Carol Davis
+    expect_contains:
+    - EMP_ID=HR-
+    - Carol Davis
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Carol Davis
+  - user: Покажи баланс отпусков Carol Davis
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: Найди сотрудника David Wilson
+    expect_contains:
+    - EMP_ID=HR-
+    - David Wilson
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: David Wilson
+  - user: Найди сотрудника Eva Martinez
+    expect_contains:
+    - EMP_ID=HR-
+    - Eva Martinez
+    expect_tool_called: employee_lookup
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      name: Eva Martinez
+- id: mem_recall_04
+  description: Memory recall & context stability (turns 19..24)
+  tags:
+  - suite_memory
+  - memory
+  - long_horizon
+  turns:
+  - user: Покажи баланс отпусков Eva Martinez
+    expect_contains:
+    - LEAVE_DAYS=
+    expect_tool_called: leave_balance
+    min_tool_calls_delta: 1
+  - user: 'Не вызывая инструменты, перечисли сотрудников которых мы искали с шага
+      13 по сей момент (Bob Smith, Carol Davis, David Wilson, Eva Martinez) и их EMP_ID
+      из этих же шагов.
+
+      '
+    max_tool_calls_delta: 0
+    expect_contains:
+    - Bob Smith
+    - Carol Davis
+  - user: Получи данные клиента C-NOISE-010
+    expect_contains:
+    - CUSTOMER=C-NOISE-010
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-NOISE-010
+  - user: Получи данные клиента C-NOISE-011
+    expect_contains:
+    - CUSTOMER=C-NOISE-011
+    expect_tool_called: customer_get
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      customer_id: C-NOISE-011
+  - user: 'Создай тикет ''Support request #1'''
+    expect_contains:
+    - TICKET_ID=TK-
+    - Support request
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: 'Support request #1'
+  - user: 'Создай тикет ''Support request #2'''
+    expect_contains:
+    - TICKET_ID=TK-
+    - Support request
+    expect_tool_called: ticket_create
+    min_tool_calls_delta: 1
+    expect_tool_args:
+      subject: 'Support request #2'
+- id: memory_recall_001
+  description: Recall предпочтения языка программирования после new_session (короткосрочный
+    контекст стёрт)
+  tags:
+  - memory
+  - memory_recall
+  - suite_memory
+  turns:
+  - user: Я предпочитаю Python, не Java.
+    expect_contains:
+    - Python
+  - new_session: true
+    user: Какой язык программирования я предпочитаю?
+    expect_contains:
+    - Python
+- id: memory_recall_002
+  description: Recall employee_id после new_session (короткосрочный контекст стёрт)
+  tags:
+  - memory
+  - memory_recall
+  - suite_memory
+  turns:
+  - user: 'Запомни: мой employee_id EMP-4242.'
+    expect_contains:
+    - EMP-4242
+  - new_session: true
+    user: Какой у меня employee_id?
+    expect_contains:
+    - EMP-4242

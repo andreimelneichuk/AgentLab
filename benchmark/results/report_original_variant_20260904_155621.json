@@ -1,0 +1,641 @@
+{
+  "started_at": "2026-09-04T10:56:05.743165+00:00",
+  "config": "/path/to/AgentLab/config.benchmark.yml",
+  "variants": [
+    "original",
+    "improvements/02-tool-validation-layer/variant"
+  ],
+  "scenarios_path": "/path/to/AgentLab/benchmark/scenarios/suites/suite_tools.yaml",
+  "suite": "tools",
+  "backends": [
+    "original",
+    "variant"
+  ],
+  "tag_filter": null,
+  "scenarios": [
+    {
+      "id": "s01_001",
+      "description": "DevOps проверяет живость MCP endpoint через benchmark_probe и маркер",
+      "tags": [
+        "catalog",
+        "smoke",
+        "suite_tools",
+        "tools"
+      ],
+      "passed": true,
+      "backends": {
+        "original": {
+          "backend": "original",
+          "passed": true,
+          "tags": [
+            "catalog",
+            "smoke",
+            "suite_tools",
+            "tools"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Слушай, не уверен что бэкенд вообще поднят — глянь живой ли сервис и скажи какой там маркер",
+              "answer": "Сервис жив. Маркер: **BENCH_MARKER_STREAMABLE=orchid-17**",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": false,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 4,
+              "latency_sec": 1.915801625000313,
+              "prompt_tokens": 6421,
+              "completion_tokens": 36,
+              "total_tokens": 6457
+            }
+          ],
+          "variant": "/path/to/AgentLab/original",
+          "duration_sec": 1.96
+        },
+        "variant": {
+          "backend": "variant",
+          "passed": true,
+          "tags": [
+            "catalog",
+            "smoke",
+            "suite_tools",
+            "tools"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Слушай, не уверен что бэкенд вообще поднят — глянь живой ли сервис и скажи какой там маркер",
+              "answer": "Сервис жив.\n\nМаркер: `BENCH_MARKER_STREAMABLE=orchid-17`",
+              "tool_calls": [
+                "benchmark_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": false,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 4,
+              "latency_sec": 0.889889249985572,
+              "prompt_tokens": 6483,
+              "completion_tokens": 37,
+              "total_tokens": 6520
+            }
+          ],
+          "variant": "/path/to/AgentLab/improvements/02-tool-validation-layer/variant",
+          "duration_sec": 0.93
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "Сервис жив. Маркер: **BENCH_MARKER_STREAMABLE=orchid-17**",
+          "answer_b_preview": "Сервис жив.\n\nМаркер: `BENCH_MARKER_STREAMABLE=orchid-17`",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "s01_002",
+      "description": "Мониторинг запрашивает healthcheck — маркер + краткий статус",
+      "tags": [
+        "catalog",
+        "suite_tools",
+        "tools"
+      ],
+      "passed": true,
+      "backends": {
+        "original": {
+          "backend": "original",
+          "passed": true,
+          "tags": [
+            "catalog",
+            "suite_tools",
+            "tools"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Алерт кричит что сервис может лежать — чекни плз и коротко напиши статус",
+              "answer": "**Статус: сервис жив.**\n\n- **Streamable MCP**: ок, маркер `BENCH_MARKER_STREAMABLE=orchid-17`\n- **SSE MCP**: ок, маркер `BENCH_MARKER_SSE=amber-91`\n- **Random probe**: ок, маркер `RANDOM_MARKER=206f8c12`\n\nВсе три контрольных инструмента ответили — падений не видно. Если алерт про конкретный эндпоинт/сервис (не эти MCP), скинь имя или лог — гляну точнее.",
+              "tool_calls": [
+                "benchmark_probe",
+                "benchmark_sse_probe",
+                "random_marker_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                },
+                {
+                  "name": "benchmark_sse_probe",
+                  "arguments": {}
+                },
+                {
+                  "name": "random_marker_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": false,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 6,
+              "latency_sec": 2.8180072079994716,
+              "prompt_tokens": 6531,
+              "completion_tokens": 169,
+              "total_tokens": 6700
+            }
+          ],
+          "variant": "/path/to/AgentLab/original",
+          "duration_sec": 2.85
+        },
+        "variant": {
+          "backend": "variant",
+          "passed": true,
+          "tags": [
+            "catalog",
+            "suite_tools",
+            "tools"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Алерт кричит что сервис может лежать — чекни плз и коротко напиши статус",
+              "answer": "**Статус: сервис работает** ✅\n\n- **Streamable MCP**: ок — `BENCH_MARKER_STREAMABLE=orchid-17`\n- **SSE MCP**: ок — `BENCH_MARKER_SSE=amber-91`\n- **Random probe**: ок — `RANDOM_MARKER=5e6a7d33`\n\nВсе три контрольных маркера вернулись штатно, признаков падения нет. Если алерт сработал по конкретному эндпоинту/метрике — скинь детали, копну глубже.",
+              "tool_calls": [
+                "benchmark_probe",
+                "benchmark_sse_probe",
+                "random_marker_probe"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "benchmark_probe",
+                  "arguments": {}
+                },
+                {
+                  "name": "benchmark_sse_probe",
+                  "arguments": {}
+                },
+                {
+                  "name": "random_marker_probe",
+                  "arguments": {}
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": false,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 6,
+              "latency_sec": 2.6917642499902286,
+              "prompt_tokens": 6593,
+              "completion_tokens": 164,
+              "total_tokens": 6757
+            }
+          ],
+          "variant": "/path/to/AgentLab/improvements/02-tool-validation-layer/variant",
+          "duration_sec": 2.74
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.367,
+          "passed": true,
+          "answer_a_preview": "**Статус: сервис жив.**\n\n- **Streamable MCP**: ок, маркер `BENCH_MARKER_STREAMABLE=orchid-17`\n- **SSE MCP**: ок, маркер `BENCH_MARKER_SSE=amber-91`\n- **Random probe**: ок, маркер `RANDOM_MARKER=206f8c12`\n\nВсе три контрольных инструмента ответили — падений не видно. Если алерт про конкретный эндпоинт",
+          "answer_b_preview": "**Статус: сервис работает** ✅\n\n- **Streamable MCP**: ок — `BENCH_MARKER_STREAMABLE=orchid-17`\n- **SSE MCP**: ок — `BENCH_MARKER_SSE=amber-91`\n- **Random probe**: ок — `RANDOM_MARKER=5e6a7d33`\n\nВсе три контрольных маркера вернулись штатно, признаков падения нет. Если алерт сработал по конкретному энд",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "s01_003",
+      "description": "Пользователь считает стоимость 3 серверов по 850 $/мес через calc_expression",
+      "tags": [
+        "catalog",
+        "suite_tools",
+        "tools"
+      ],
+      "passed": true,
+      "backends": {
+        "original": {
+          "backend": "original",
+          "passed": true,
+          "tags": [
+            "catalog",
+            "suite_tools",
+            "tools"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Хочу прикинуть расходы на инфру: три сервера по 850 баксов в месяц. Сколько в месяц выйдет?",
+              "answer": "**2550 $/мес** (3 × 850).",
+              "tool_calls": [
+                "calc_expression"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "calc_expression",
+                  "arguments": {
+                    "expression": "3*850"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": true,
+              "tool_args_ok": true,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 4,
+              "latency_sec": 0.9067927920259535,
+              "prompt_tokens": 6434,
+              "completion_tokens": 49,
+              "total_tokens": 6483
+            }
+          ],
+          "variant": "/path/to/AgentLab/original",
+          "duration_sec": 0.93
+        },
+        "variant": {
+          "backend": "variant",
+          "passed": true,
+          "tags": [
+            "catalog",
+            "suite_tools",
+            "tools"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Хочу прикинуть расходы на инфру: три сервера по 850 баксов в месяц. Сколько в месяц выйдет?",
+              "answer": "**2550 $/мес** (3 × 850).",
+              "tool_calls": [
+                "calc_expression"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "calc_expression",
+                  "arguments": {
+                    "expression": "3*850"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": true,
+              "passed": true,
+              "failures": [],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": true,
+              "tool_args_ok": true,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 4,
+              "latency_sec": 0.9261605000065174,
+              "prompt_tokens": 6496,
+              "completion_tokens": 49,
+              "total_tokens": 6545
+            }
+          ],
+          "variant": "/path/to/AgentLab/improvements/02-tool-validation-layer/variant",
+          "duration_sec": 0.96
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 1.0,
+          "passed": true,
+          "answer_a_preview": "**2550 $/мес** (3 × 850).",
+          "answer_b_preview": "**2550 $/мес** (3 × 850).",
+          "turn_index": 0
+        }
+      ]
+    },
+    {
+      "id": "s01_004",
+      "description": "Финансист рассчитывает ROI инвестиций через calc_expression с проверкой аргументов",
+      "tags": [
+        "catalog",
+        "critical",
+        "suite_tools",
+        "tools"
+      ],
+      "passed": false,
+      "backends": {
+        "original": {
+          "backend": "original",
+          "passed": false,
+          "tags": [
+            "catalog",
+            "critical",
+            "suite_tools",
+            "tools"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Нужен ROI по проекту: вложили 45 000, выручка 120 000. Формула (доход − затраты) / затраты × 100. Посчитай % возврата",
+              "answer": "ROI = **(120 000 − 45 000) / 45 000 × 100 ≈ 166,67%**\n\nТо есть проект приносит ~167% возврата на вложенные средства.",
+              "tool_calls": [
+                "calc_expression"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "calc_expression",
+                  "arguments": {
+                    "expression": "(120000 - 45000) / 45000 * 100"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": false,
+              "passed": false,
+              "failures": [
+                "нет подстроки ['RESULT=']",
+                "аргументы tool 'calc_expression' не совпали с {'expression': '(120000-45000)/45000*100'}"
+              ],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": true,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 4,
+              "latency_sec": 1.8998387500178069,
+              "prompt_tokens": 6516,
+              "completion_tokens": 112,
+              "total_tokens": 6628
+            }
+          ],
+          "variant": "/path/to/AgentLab/original",
+          "duration_sec": 1.93
+        },
+        "variant": {
+          "backend": "variant",
+          "passed": false,
+          "tags": [
+            "catalog",
+            "critical",
+            "suite_tools",
+            "tools"
+          ],
+          "turns": [
+            {
+              "turn_index": 0,
+              "user": "Нужен ROI по проекту: вложили 45 000, выручка 120 000. Формула (доход − затраты) / затраты × 100. Посчитай % возврата",
+              "answer": "**ROI = 166,67%**\n\nРасчёт: (120 000 − 45 000) / 45 000 × 100 ≈ 166,67%\n\nТо есть на каждый вложенный рубль вы получили ~1,67 рубля чистой прибыли сверх затрат.",
+              "tool_calls": [
+                "calc_expression"
+              ],
+              "tool_call_details": [
+                {
+                  "name": "calc_expression",
+                  "arguments": {
+                    "expression": "(120000 - 45000) / 45000 * 100"
+                  }
+                }
+              ],
+              "rounds": 2,
+              "mcp_delta": 1,
+              "checker_passed": false,
+              "passed": false,
+              "failures": [
+                "нет подстроки ['RESULT=']",
+                "аргументы tool 'calc_expression' не совпали с {'expression': '(120000-45000)/45000*100'}"
+              ],
+              "judge_eligible": false,
+              "judge_passed": null,
+              "judge_reason": null,
+              "is_hallucination_nta": false,
+              "is_wrong_tool_dt": false,
+              "is_nta_measurable": false,
+              "is_tool_selection_measurable": true,
+              "tool_selection_ok": true,
+              "is_tool_args_measurable": true,
+              "tool_args_ok": false,
+              "is_abstention_measurable": false,
+              "abstention_ok": false,
+              "history_length": 4,
+              "latency_sec": 2.1637638749962207,
+              "prompt_tokens": 6578,
+              "completion_tokens": 131,
+              "total_tokens": 6709
+            }
+          ],
+          "variant": "/path/to/AgentLab/improvements/02-tool-validation-layer/variant",
+          "duration_sec": 2.22
+        }
+      },
+      "pairwise_similarity": [
+        {
+          "similarity": 0.273,
+          "passed": false,
+          "answer_a_preview": "ROI = **(120 000 − 45 000) / 45 000 × 100 ≈ 166,67%**\n\nТо есть проект приносит ~167% возврата на вложенные средства.",
+          "answer_b_preview": "**ROI = 166,67%**\n\nРасчёт: (120 000 − 45 000) / 45 000 × 100 ≈ 166,67%\n\nТо есть на каждый вложенный рубль вы получили ~1,67 рубля чистой прибыли сверх затрат.",
+          "turn_index": 0
+        }
+      ]
+    }
+  ],
+  "finished_at": "2026-09-04T10:56:21.722889+00:00",
+  "all_passed": false,
+  "scorecard": {
+    "per_backend": {
+      "original": {
+        "backend": "original",
+        "composite_agent_score": 89.0,
+        "domain_solve_rates": {
+          "tools": 0.75
+        },
+        "solve_rate": 0.75,
+        "critical_solve_rate": 0.0,
+        "turn_accuracy": 0.75,
+        "agent_accuracy_pct": 75.0,
+        "tool_selection_accuracy": 1.0,
+        "tool_argument_accuracy": 0.5,
+        "abstention_pass": 0.0,
+        "anti_hallucination_pass": 0.0,
+        "decoy_avoidance_pass": 0.0,
+        "r_nta": 0.0,
+        "r_dt": 0.0,
+        "tokens_per_solved": 8756.0,
+        "mean_latency_sec": 1.885,
+        "scenarios_passed": 3,
+        "scenarios_total": 4,
+        "critical_scenarios_passed": 0,
+        "critical_scenarios_total": 1,
+        "turns_passed": 3,
+        "turns_graded": 4,
+        "nta_hallucinations": 0,
+        "nta_turns": 0,
+        "dt_errors": 0,
+        "dt_turns": 0,
+        "tsa_ok": 4,
+        "tsa_turns": 4,
+        "taa_ok": 1,
+        "taa_turns": 2,
+        "abstention_ok": 0,
+        "abstention_turns": 0,
+        "total_tokens": 26268,
+        "total_prompt_tokens": 25902,
+        "total_completion_tokens": 366,
+        "total_latency_sec": 7.54,
+        "failure_mix": {
+          "content": 0.5,
+          "tool_args": 0.5
+        },
+        "failure_counts": {
+          "content": 1,
+          "tool_args": 1
+        }
+      },
+      "variant": {
+        "backend": "variant",
+        "composite_agent_score": 89.6,
+        "domain_solve_rates": {
+          "tools": 0.75
+        },
+        "solve_rate": 0.75,
+        "critical_solve_rate": 0.0,
+        "turn_accuracy": 0.75,
+        "agent_accuracy_pct": 75.0,
+        "tool_selection_accuracy": 1.0,
+        "tool_argument_accuracy": 0.5,
+        "abstention_pass": 0.0,
+        "anti_hallucination_pass": 0.0,
+        "decoy_avoidance_pass": 0.0,
+        "r_nta": 0.0,
+        "r_dt": 0.0,
+        "tokens_per_solved": 8843.7,
+        "mean_latency_sec": 1.668,
+        "scenarios_passed": 3,
+        "scenarios_total": 4,
+        "critical_scenarios_passed": 0,
+        "critical_scenarios_total": 1,
+        "turns_passed": 3,
+        "turns_graded": 4,
+        "nta_hallucinations": 0,
+        "nta_turns": 0,
+        "dt_errors": 0,
+        "dt_turns": 0,
+        "tsa_ok": 4,
+        "tsa_turns": 4,
+        "taa_ok": 1,
+        "taa_turns": 2,
+        "abstention_ok": 0,
+        "abstention_turns": 0,
+        "total_tokens": 26531,
+        "total_prompt_tokens": 26150,
+        "total_completion_tokens": 381,
+        "total_latency_sec": 6.67,
+        "failure_mix": {
+          "content": 0.5,
+          "tool_args": 0.5
+        },
+        "failure_counts": {
+          "content": 1,
+          "tool_args": 1
+        }
+      }
+    },
+    "aggregate": {},
+    "comparative": {},
+    "scorecard_version": "v1"
+  },
+  "baseline_diff": {
+    "status": "no_baseline"
+  }
+}

@@ -1,4 +1,4 @@
-# Basic Agent — variant 11 (neurosymbolic guardrails)
+# Baseline Agent Agent — variant 11 (neurosymbolic guardrails)
 
 Эталон `original/` + **нейросимволические guardrails** (policy-as-code в `rules/`).
 

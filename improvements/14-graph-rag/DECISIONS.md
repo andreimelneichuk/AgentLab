@@ -13,7 +13,7 @@
 
 Если драйвер Neo4j не установлен или URI не задан — **автоматический fallback на memory** + warning в лог.
 
-Neptune/ArangoDB не рассматриваем: стек Basic не AWS-only, Neo4j проще для команды с MCP/self-hosted.
+Neptune/ArangoDB не рассматриваем: стек Baseline Agent не AWS-only, Neo4j проще для команды с MCP/self-hosted.
 
 ## 2. ETL → nightly snapshot из HR MCP + policy
 

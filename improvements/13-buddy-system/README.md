@@ -95,14 +95,14 @@ def steering_handler(worker_output, criteria) -> Guide | None:
 
 Worker получает Guide и **повторяет**, зная конкретную ошибку.
 
-## Критерии для Buddy (Basic)
+## Критерии для Buddy (Baseline Agent)
 
 - Вызван ли обязательный tool перед маркером ответа
 - Нет ли forbidden tool в trace
 - Сохранён ли формат вывода (Секция 4)
 - Для instruction-сценариев: выполнены ли явные шаги из `s09_instruction`
 
-## Что менять в Basic
+## Что менять в Baseline Agent
 
 | Место | Действие |
 |-------|----------|
@@ -132,7 +132,7 @@ Worker получает Guide и **повторяет**, зная конкрет
 
 ## Чеклист
 
-- [x] Критерии judge по доменам Basic
+- [x] Критерии judge по доменам Baseline Agent
 - [x] Retry loop с Guide message
 - [x] max_retries=3
 - [ ] A/B: только SCAN vs SCAN+Buddy на длинных сессиях

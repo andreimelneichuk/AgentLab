@@ -1,4 +1,4 @@
-# Basic Agent — Buddy System (13)
+# Baseline Agent Agent — Buddy System (13)
 
 Вариант с **LLM-as-Judge**: напарник корректирует дрейф ответа worker.
 

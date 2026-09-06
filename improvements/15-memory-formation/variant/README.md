@@ -1,4 +1,4 @@
-# Basic Agent — original (эталон)
+# Baseline Agent Agent — original (эталон)
 
 Замороженная эталонная версия: basic loop + MCP.
 

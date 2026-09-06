@@ -57,7 +57,7 @@ def route(message: str) -> Domain:
 
 - UI уже знает модуль (CRM tab) → tools только этого модуля
 
-## Что менять в Basic
+## Что менять в Baseline Agent
 
 | Место | Действие |
 |-------|----------|

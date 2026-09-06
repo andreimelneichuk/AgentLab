@@ -119,7 +119,7 @@ PYTHONPATH=. python -m benchmark.compare --variant improvements/05-deterministic
 
 100% офлайн-покрытие снимает структурный потолок TSA, который душил v1
 (64% при потолке 75.5%). Дальше TSA/SR зависят уже от самой модели —
-E2E-прогон требует доступа к `localhost` (недоступен
+E2E-прогон требует доступа к `llm-server.local` (недоступен
 из текущего окружения на момент этой правки), поэтому финальные SR/TSA
 нужно снять отдельным прогоном `benchmark.compare` и обновить
 `report_05.md`/`SUMMARY.md`.

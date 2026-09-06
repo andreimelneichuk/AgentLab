@@ -1,4 +1,4 @@
-# Basic Agent — semantic tool selection (08)
+# Baseline Agent Agent — semantic tool selection (08)
 
 Вариант с top-k фильтрацией инструментов перед `bind_tools` (TF-IDF retriever).
 

@@ -61,7 +61,7 @@
 - −80–90% токенов vs полная история
 - +26% качество ответов (их бенчмарк)
 
-## Что менять в Basic
+## Что менять в Baseline Agent
 
 | Место | Действие |
 |-------|----------|
@@ -69,7 +69,7 @@
 | `agent_core.py` | Inject retrieved facts в system/user context |
 | Multi-session тесты | Сессия N помнит факты из сессии 1 |
 
-### Типы фактов для Basic
+### Типы фактов для Baseline Agent
 
 - Предпочтения пользователя (язык, формат ответа)
 - Уже полученные entity IDs (employee_id, policy_code)

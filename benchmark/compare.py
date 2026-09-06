@@ -45,7 +45,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Бенчмарк агента Basic")
+    p = argparse.ArgumentParser(description="Бенчмарк AI-агента (Baseline vs Improvements)")
     p.add_argument(
         "--variant",
         action="append",
@@ -55,6 +55,12 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("-c", "--config", type=Path, default=REPO_ROOT / "config.benchmark.yml")
     p.add_argument("-s", "--scenarios", type=Path, default=REPO_ROOT / "benchmark/scenarios")
+    p.add_argument(
+        "--suite",
+        choices=["balanced", "tools", "safety", "memory", "graph", "all"],
+        default=None,
+        help="Сбалансированный набор сценариев из benchmark/scenarios/suites/suite_<name>.yaml",
+    )
     p.add_argument("--backends", default="", help="basic_loop,basic_http (внутри одного variant)")
     p.add_argument("--baseline", help="Backend для A/B (baseline)")
     p.add_argument("--candidate", help="Backend для A/B (candidate)")
@@ -123,7 +129,13 @@ def load_scenarios(path: Path, tag_filter: Optional[List[str]] = None) -> List[D
     seen_ids: set[str] = set()
 
     if path.is_dir():
-        files = sorted(path.rglob("*.yaml")) + sorted(path.rglob("*.yml"))
+        all_files = sorted(path.rglob("*.yaml")) + sorted(path.rglob("*.yml"))
+        # Не включаем подкаталог suites/ при общем обходе каталога сценариев
+        suites_dir = (REPO_ROOT / "benchmark/scenarios/suites").resolve()
+        if path.resolve() != suites_dir and suites_dir not in path.resolve().parents:
+            files = [f for f in all_files if "suites" not in f.parts]
+        else:
+            files = all_files
     else:
         files = [path]
 
@@ -342,7 +354,15 @@ async def run_compare(args: argparse.Namespace) -> int:
 
     base_config = load_config_yaml(args.config)
     tag_filter = [t.strip() for t in args.tags.split(",") if t.strip()] or None
-    scenarios = load_scenarios(args.scenarios, tag_filter)
+
+    scenarios_path = args.scenarios
+    if getattr(args, "suite", None):
+        if args.suite == "all":
+            scenarios_path = REPO_ROOT / "benchmark/scenarios/suites"
+        else:
+            scenarios_path = REPO_ROOT / "benchmark/scenarios/suites" / f"suite_{args.suite}.yaml"
+
+    scenarios = load_scenarios(scenarios_path, tag_filter)
     if args.limit and args.limit > 0:
         scenarios = scenarios[: args.limit]
 
@@ -365,7 +385,8 @@ async def run_compare(args: argparse.Namespace) -> int:
         "started_at": datetime.now(timezone.utc).isoformat(),
         "config": str(args.config),
         "variants": [str(v) for v in variants],
-        "scenarios_path": str(args.scenarios),
+        "scenarios_path": str(scenarios_path),
+        "suite": getattr(args, "suite", None),
         "backends": backend_labels,
         "tag_filter": tag_filter,
         "scenarios": [],

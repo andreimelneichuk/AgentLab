@@ -1,4 +1,4 @@
-# Basic Agent — variant 16 (Self-Refinement Recall)
+# Baseline Agent Agent — variant 16 (Self-Refinement Recall)
 
 Скопировано из `improvements/12-multi-agent-validation/variant/` (Worker +
 Validator + tier-1/tier-2 gating scaffolding) и дополнено новым модулем
