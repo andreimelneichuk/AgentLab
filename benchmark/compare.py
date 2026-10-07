@@ -196,7 +196,7 @@ def make_session(
     model_alias: Optional[str],
 ) -> Union[Any, BasicHttpSession]:
     if session_kind == "basic_http":
-        gb_cfg = config.get("basic_http") or {}
+        gb_cfg = config.get("http_backend") or config.get("basic_http") or {}
         return BasicHttpSession(
             base_url=gb_cfg.get("base_url", "http://127.0.0.1:9094"),
             webhook_url=gb_cfg.get("webhook_url", "http://127.0.0.1:19110"),
@@ -367,7 +367,7 @@ async def run_compare(args: argparse.Namespace) -> int:
         scenarios = scenarios[: args.limit]
 
     if "basic_http" in {kind for _, _, kind in targets}:
-        wh = (base_config.get("basic_http") or {}).get("webhook_port", 19110)
+        wh = (base_config.get("http_backend") or base_config.get("basic_http") or {}).get("webhook_port", 19110)
         start_webhook_server(port=int(wh))
 
     if args.reset_mcp_stats:
