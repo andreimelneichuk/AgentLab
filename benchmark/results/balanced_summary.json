@@ -1,0 +1,677 @@
+{
+ "description": "Сводка scorecard по прогонам suite_balanced (извлечено из сырых report_*.json, которые удалены из репозитория). Каждый прогон содержит baseline (original) и один вариант.",
+ "runs": [
+  {
+   "run": "report_original_variant_20260904_153612",
+   "started_at": "2026-09-04T10:08:15.407948+00:00",
+   "variants": [
+    "original",
+    "improvements/08-semantic-tool-selection/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.725,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8652,
+     "tool_selection_accuracy": 0.9114,
+     "tool_argument_accuracy": 0.9778,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 77.4,
+     "mean_latency_sec": 1.988,
+     "scenarios_passed": 29,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 77,
+     "turns_graded": 89,
+     "total_tokens": 646673,
+     "domain_solve_rates": {
+      "tools": 1.0,
+      "safety": 0.9091,
+      "memory": 0.5,
+      "graph": 0.5
+     }
+    },
+    "variant": {
+     "solve_rate": 0.7,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8764,
+     "tool_selection_accuracy": 0.962,
+     "tool_argument_accuracy": 0.9111,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 77.7,
+     "mean_latency_sec": 2.28,
+     "scenarios_passed": 28,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 78,
+     "turns_graded": 89,
+     "total_tokens": 469067,
+     "domain_solve_rates": {
+      "tools": 0.7778,
+      "safety": 0.9091,
+      "memory": 0.4,
+      "graph": 0.7
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260904_160711",
+   "started_at": "2026-09-04T10:59:29.267986+00:00",
+   "variants": [
+    "original",
+    "improvements/02-tool-validation-layer/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.75,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8989,
+     "tool_selection_accuracy": 0.9367,
+     "tool_argument_accuracy": 0.9778,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 81.0,
+     "mean_latency_sec": 1.66,
+     "scenarios_passed": 30,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 80,
+     "turns_graded": 89,
+     "total_tokens": 619568,
+     "domain_solve_rates": {
+      "tools": 1.0,
+      "safety": 0.8182,
+      "memory": 0.5,
+      "graph": 0.7
+     }
+    },
+    "variant": {
+     "solve_rate": 0.75,
+     "critical_solve_rate": 1.0,
+     "turn_accuracy": 0.8989,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9778,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 80.5,
+     "mean_latency_sec": 2.01,
+     "scenarios_passed": 30,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 4,
+     "critical_scenarios_total": 4,
+     "turns_passed": 80,
+     "turns_graded": 89,
+     "total_tokens": 672718,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 0.9091,
+      "memory": 0.5,
+      "graph": 0.7
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260904_172135",
+   "started_at": "2026-09-04T12:15:25.726172+00:00",
+   "variants": [
+    "original",
+    "improvements/05-deterministic-routing/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.725,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8764,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9778,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 80.3,
+     "mean_latency_sec": 1.66,
+     "scenarios_passed": 29,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 78,
+     "turns_graded": 89,
+     "total_tokens": 635470,
+     "domain_solve_rates": {
+      "tools": 1.0,
+      "safety": 0.8182,
+      "memory": 0.5,
+      "graph": 0.6
+     }
+    },
+    "variant": {
+     "solve_rate": 0.75,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8989,
+     "tool_selection_accuracy": 0.9367,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 81.6,
+     "mean_latency_sec": 1.616,
+     "scenarios_passed": 30,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 80,
+     "turns_graded": 89,
+     "total_tokens": 494761,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 1.0,
+      "memory": 0.6,
+      "graph": 0.5
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260904_172833",
+   "started_at": "2026-09-04T12:21:50.704757+00:00",
+   "variants": [
+    "original",
+    "improvements/08-semantic-tool-selection/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.725,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8876,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 82.6,
+     "mean_latency_sec": 1.769,
+     "scenarios_passed": 29,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 79,
+     "turns_graded": 89,
+     "total_tokens": 643726,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 0.8182,
+      "memory": 0.6,
+      "graph": 0.6
+     }
+    },
+    "variant": {
+     "solve_rate": 0.725,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8876,
+     "tool_selection_accuracy": 0.9367,
+     "tool_argument_accuracy": 0.9333,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 77.2,
+     "mean_latency_sec": 1.759,
+     "scenarios_passed": 29,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 79,
+     "turns_graded": 89,
+     "total_tokens": 500462,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 1.0,
+      "memory": 0.4,
+      "graph": 0.6
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260904_173558",
+   "started_at": "2026-09-04T12:29:31.216003+00:00",
+   "variants": [
+    "original",
+    "improvements/15-memory-formation/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.75,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8989,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 83.4,
+     "mean_latency_sec": 1.844,
+     "scenarios_passed": 30,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 80,
+     "turns_graded": 89,
+     "total_tokens": 640852,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 0.8182,
+      "memory": 0.6,
+      "graph": 0.7
+     }
+    },
+    "variant": {
+     "solve_rate": 0.75,
+     "critical_solve_rate": 1.0,
+     "turn_accuracy": 0.8989,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9333,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 81.4,
+     "mean_latency_sec": 1.632,
+     "scenarios_passed": 30,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 4,
+     "critical_scenarios_total": 4,
+     "turns_passed": 80,
+     "turns_graded": 89,
+     "total_tokens": 655214,
+     "domain_solve_rates": {
+      "tools": 0.7778,
+      "safety": 1.0,
+      "memory": 0.5,
+      "graph": 0.7
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260904_174347",
+   "started_at": "2026-09-04T12:37:43.814264+00:00",
+   "variants": [
+    "original",
+    "improvements/09-context-engineering/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.675,
+     "critical_solve_rate": 0.5,
+     "turn_accuracy": 0.8652,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9333,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 80.4,
+     "mean_latency_sec": 1.615,
+     "scenarios_passed": 27,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 2,
+     "critical_scenarios_total": 4,
+     "turns_passed": 77,
+     "turns_graded": 89,
+     "total_tokens": 637479,
+     "domain_solve_rates": {
+      "tools": 0.7778,
+      "safety": 0.8182,
+      "memory": 0.5,
+      "graph": 0.6
+     }
+    },
+    "variant": {
+     "solve_rate": 0.775,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.9101,
+     "tool_selection_accuracy": 0.962,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 82.0,
+     "mean_latency_sec": 1.534,
+     "scenarios_passed": 31,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 81,
+     "turns_graded": 89,
+     "total_tokens": 688724,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 1.0,
+      "memory": 0.5,
+      "graph": 0.7
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260904_175033",
+   "started_at": "2026-09-04T12:43:58.690709+00:00",
+   "variants": [
+    "original",
+    "improvements/07-focus-active-compression/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.75,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8989,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9778,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 82.7,
+     "mean_latency_sec": 1.711,
+     "scenarios_passed": 30,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 80,
+     "turns_graded": 89,
+     "total_tokens": 637043,
+     "domain_solve_rates": {
+      "tools": 1.0,
+      "safety": 0.8182,
+      "memory": 0.6,
+      "graph": 0.6
+     }
+    },
+    "variant": {
+     "solve_rate": 0.8,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.9101,
+     "tool_selection_accuracy": 0.962,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 83.8,
+     "mean_latency_sec": 1.807,
+     "scenarios_passed": 32,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 81,
+     "turns_graded": 89,
+     "total_tokens": 815689,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 1.0,
+      "memory": 0.6,
+      "graph": 0.7
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260904_175441",
+   "started_at": "2026-09-04T12:51:04.389547+00:00",
+   "variants": [
+    "original",
+    "improvements/14-graph-rag/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.7,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8764,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 81.5,
+     "mean_latency_sec": 1.584,
+     "scenarios_passed": 28,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 78,
+     "turns_graded": 89,
+     "total_tokens": 635036,
+     "domain_solve_rates": {
+      "tools": 0.7778,
+      "safety": 0.8182,
+      "memory": 0.5,
+      "graph": 0.7
+     }
+    },
+    "variant": {
+     "solve_rate": 0.0,
+     "critical_solve_rate": 0.0,
+     "turn_accuracy": 0.0,
+     "tool_selection_accuracy": 0.0,
+     "tool_argument_accuracy": 0.0,
+     "anti_hallucination_pass": 0.0,
+     "composite_agent_score": 35.0,
+     "mean_latency_sec": 0.0,
+     "scenarios_passed": 0,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 0,
+     "critical_scenarios_total": 4,
+     "turns_passed": 0,
+     "turns_graded": 0,
+     "total_tokens": 0,
+     "domain_solve_rates": {
+      "tools": 0.0,
+      "safety": 0.0,
+      "memory": 0.0,
+      "graph": 0.0
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260904_183857",
+   "started_at": "2026-09-04T12:55:55.335599+00:00",
+   "variants": [
+    "original",
+    "improvements/14-graph-rag/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.3,
+     "critical_solve_rate": 0.0,
+     "turn_accuracy": 0.7895,
+     "tool_selection_accuracy": 1.0,
+     "tool_argument_accuracy": 0.875,
+     "anti_hallucination_pass": 0.0,
+     "composite_agent_score": 61.7,
+     "mean_latency_sec": 2.304,
+     "scenarios_passed": 12,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 0,
+     "critical_scenarios_total": 4,
+     "turns_passed": 15,
+     "turns_graded": 19,
+     "total_tokens": 127113,
+     "domain_solve_rates": {
+      "tools": 0.7778,
+      "safety": 0.4545,
+      "memory": 0.0,
+      "graph": 0.0
+     }
+    },
+    "variant": {
+     "solve_rate": 0.325,
+     "critical_solve_rate": 0.25,
+     "turn_accuracy": 0.9444,
+     "tool_selection_accuracy": 1.0,
+     "tool_argument_accuracy": 1.0,
+     "anti_hallucination_pass": 0.0,
+     "composite_agent_score": 61.2,
+     "mean_latency_sec": 2.502,
+     "scenarios_passed": 13,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 1,
+     "critical_scenarios_total": 4,
+     "turns_passed": 17,
+     "turns_graded": 18,
+     "total_tokens": 137790,
+     "domain_solve_rates": {
+      "tools": 1.0,
+      "safety": 0.3636,
+      "memory": 0.0,
+      "graph": 0.0
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260906_180456",
+   "started_at": "2026-09-06T12:58:27.728009+00:00",
+   "variants": [
+    "original",
+    "improvements/14-graph-rag/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.725,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8876,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 81.1,
+     "mean_latency_sec": 1.752,
+     "scenarios_passed": 29,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 79,
+     "turns_graded": 89,
+     "total_tokens": 636932,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 0.8182,
+      "memory": 0.5,
+      "graph": 0.7
+     }
+    },
+    "variant": {
+     "solve_rate": 0.775,
+     "critical_solve_rate": 1.0,
+     "turn_accuracy": 0.8989,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9778,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 81.3,
+     "mean_latency_sec": 1.691,
+     "scenarios_passed": 31,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 4,
+     "critical_scenarios_total": 4,
+     "turns_passed": 80,
+     "turns_graded": 89,
+     "total_tokens": 704801,
+     "domain_solve_rates": {
+      "tools": 1.0,
+      "safety": 0.9091,
+      "memory": 0.5,
+      "graph": 0.7
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260906_181144",
+   "started_at": "2026-09-06T13:05:11.723364+00:00",
+   "variants": [
+    "original",
+    "improvements/13-buddy-system/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.725,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8652,
+     "tool_selection_accuracy": 0.9241,
+     "tool_argument_accuracy": 0.9778,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 79.4,
+     "mean_latency_sec": 1.724,
+     "scenarios_passed": 29,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 77,
+     "turns_graded": 89,
+     "total_tokens": 637997,
+     "domain_solve_rates": {
+      "tools": 1.0,
+      "safety": 0.8182,
+      "memory": 0.5,
+      "graph": 0.6
+     }
+    },
+    "variant": {
+     "solve_rate": 0.675,
+     "critical_solve_rate": 1.0,
+     "turn_accuracy": 0.8539,
+     "tool_selection_accuracy": 0.9241,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 77.3,
+     "mean_latency_sec": 1.784,
+     "scenarios_passed": 27,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 4,
+     "critical_scenarios_total": 4,
+     "turns_passed": 76,
+     "turns_graded": 89,
+     "total_tokens": 900789,
+     "domain_solve_rates": {
+      "tools": 0.7778,
+      "safety": 1.0,
+      "memory": 0.5,
+      "graph": 0.4
+     }
+    }
+   }
+  },
+  {
+   "run": "report_original_variant_20260906_181852",
+   "started_at": "2026-09-06T13:12:00.989631+00:00",
+   "variants": [
+    "original",
+    "improvements/12-multi-agent-validation/variant"
+   ],
+   "per_backend": {
+    "original": {
+     "solve_rate": 0.725,
+     "critical_solve_rate": 0.75,
+     "turn_accuracy": 0.8876,
+     "tool_selection_accuracy": 0.9494,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 81.0,
+     "mean_latency_sec": 1.797,
+     "scenarios_passed": 29,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 3,
+     "critical_scenarios_total": 4,
+     "turns_passed": 79,
+     "turns_graded": 89,
+     "total_tokens": 637308,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 0.8182,
+      "memory": 0.5,
+      "graph": 0.7
+     }
+    },
+    "variant": {
+     "solve_rate": 0.775,
+     "critical_solve_rate": 1.0,
+     "turn_accuracy": 0.8989,
+     "tool_selection_accuracy": 0.962,
+     "tool_argument_accuracy": 0.9556,
+     "anti_hallucination_pass": 1.0,
+     "composite_agent_score": 81.4,
+     "mean_latency_sec": 1.794,
+     "scenarios_passed": 31,
+     "scenarios_total": 40,
+     "critical_scenarios_passed": 4,
+     "critical_scenarios_total": 4,
+     "turns_passed": 80,
+     "turns_graded": 89,
+     "total_tokens": 664068,
+     "domain_solve_rates": {
+      "tools": 0.8889,
+      "safety": 1.0,
+      "memory": 0.5,
+      "graph": 0.7
+     }
+    }
+   }
+  }
+ ]
+}

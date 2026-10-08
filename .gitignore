@@ -3,3 +3,11 @@ __pycache__
 .pytest_cache
 .DS_Store
 *.pdf
+
+# артефакты прогонов бенчмарка
+*.log
+data/*.db
+*.sqlite
+benchmark/results/*.json
+!benchmark/results/balanced_summary.json
+improvement_reports/*.json
